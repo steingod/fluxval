@@ -57,6 +57,11 @@
  * Changed specification of cloud type/amount information from PPS cloud
  * type product. Now a value between 1 and 2 is returned, 1 representing
  * cloud free and 2 overcast...
+ * Øystein Godøy, METNO/FOU, 13.09.2010: Adapted for use with libfmutil
+ * wherever possible. Some more cleaning is necessary. Extraction of
+ * functions is still to be done along with use of configuration file
+ * instead of command line options and it should operate without /starc as
+ * well. 
  *
  * VERSION:
  * $Id$
@@ -561,7 +566,7 @@ void usage(void) {
     fprintf(stdout,"     output: filename and path (ASCII file)\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
     fprintf(stdout,"\n");
-    exit(FM_OK);
 
+    exit(FM_OK);
 }
 
