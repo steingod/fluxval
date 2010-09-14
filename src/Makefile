@@ -74,24 +74,18 @@ CFLAGS = \
   $(OPT)
 
 RUNFILE1 = \
-  fluxval_hour
+  fluxval
 
 RUNFILE2 = \
-  fluxval_day
 
 OBJS1 = \
-  fluxval_hour.o \
+  fluxval.o \
   fluxval_readobs.o \
   fluxval_stlist.o \
   return_product_area.o \
   timecnv.o 
 
-OBJS2 = \
-  fluxval_day.o \
-  fluxval_readobs.o \
-  fluxval_stlist.o \
-  return_product_area.o \
-  timecnv.o
+OBJS2 = 
 
 # Specify name of dependency files (e.g. header files)
 
@@ -116,7 +110,7 @@ JOBFILES = run_job
 
 all:
 	$(MAKE) $(RUNFILE1)
-	$(MAKE) $(RUNFILE2)
+#	$(MAKE) $(RUNFILE2)
 
 $(RUNFILE1): $(OBJS1)
 	$(CC) $(OBJS1) $(CFLAGS) -o $(RUNFILE1) $(LDFLAGS)

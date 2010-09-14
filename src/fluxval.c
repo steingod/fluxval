@@ -1,6 +1,6 @@
 /*
  * NAME:
- * fluxval_hour.c
+ * fluxval.c
  * 
  * PURPOSE:
  * To monitor the quality of OSISAF radiative flux products against
@@ -36,7 +36,7 @@
  * Adapted for use on LINUX.
  * Øystein Godøy, DNMI/FOU, 25/03/2002
  * Changing output format and controlling time comparison between obs and
- * sat. Control is only implemented for ns products at present (hardcoded
+ * sat. Control is only implemented for ns products at present (hard coded
  * below...). It is assumed that observations are given in UTC time and
  * centered on the observation time...
  * Øystein Godøy, DNMI/FOU, 27/03/2002
@@ -46,9 +46,9 @@
  * information to be put in the SSI product area output...
  * Øystein Godøy, DNMI/FOU, 10/04/2002
  * Renamed qc_auto to qc_auto_hour to prepare for daily integration
- * version and rewrote qc_auto_hour to accept product area as commandline
+ * version and rewrote qc_auto_hour to accept product area as command line
  * input. I did also find an error in the stations input list. Position is
- * given as degrees, minutes and seconds in hundreths in the reference
+ * given as degrees, minutes and seconds in hundredths in the reference
  * book I have used (Klimaavdelingen) while I thought it was in decimal
  * degrees. This is now changed...
  * Øystein Godøy, DNMI/FOU, 07.07.2003
@@ -62,6 +62,9 @@
  * functions is still to be done along with use of configuration file
  * instead of command line options and it should operate without /starc as
  * well. 
+ * Øystein Godøy, METNO/FOU, 14.09.2010: Included validation of both
+ * passage and daily estimates in the same main program for easier
+ * maintenance in the future.
  *
  * VERSION:
  * $Id$
@@ -79,8 +82,9 @@ int main(int argc, char *argv[]) {
     char dir2read[FMSTRING512];
     char *outfile, *infile, *stfile, *parea, *fntest;
     char stime[11], etime[11], timeid[11];
-    int h, i, j, k, l, m, novalobs, cmobs, geomobs;
-    short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, status;
+    int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
+    short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
+    short status;
     short obsmonth;
     osihdf ipd;
     struct tm time_str;
@@ -94,6 +98,7 @@ int main(int argc, char *argv[]) {
     s_data sdata;
     fmgeopos gpos;
     float meanflux, meanvalues[3], *cmdata, meancm;
+    float meanobs;
     float misval=-999.;
     FILE *fp;
 
@@ -101,7 +106,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "as:e:p:i:o:")) != EOF) {
+    while ((i = getopt(argc, argv, "as:e:p:i:o:d")) != EOF) {
         switch (i) {
             case 's':
                 strcpy(stime,optarg);
@@ -132,6 +137,9 @@ int main(int argc, char *argv[]) {
             case 'a':
                 aflg++;
                 break;
+            case 'd':
+                dflg++;
+                break;
             default:
                 usage();
                 break;
@@ -139,17 +147,21 @@ int main(int argc, char *argv[]) {
     }
 
     /*
-     * Check if all necessary information was given at commandline.
+     * Check if all necessary information was given at command line.
      */
     if (!sflg || !eflg || !iflg || !oflg) usage();
 
     /*
-     * Create character string to test filneames against to avoid
+     * Create character string to test filenames against to avoid
      * unnecessary processing...
      */
     fntest = (char *) malloc(FILENAMELEN);
     if (!fntest) exit(FM_MEMALL_ERR);
-    sprintf(fntest,"%s.hdf5",parea);
+    if (dflg) {
+        sprintf(fntest,"daily");
+    } else {
+        sprintf(fntest,"%s.hdf5",parea);
+    }
 
     /*
      * Decode time specification of period.
@@ -219,8 +231,13 @@ int main(int argc, char *argv[]) {
      * Specifying the size of the data collection box. This should be
      * configurable in the future, but is hardcoded at present...
      */
-    sdata.iw = 13;
-    sdata.ih = 13;
+    if (dflg) {
+        sdata.iw = 1;
+        sdata.ih = 1;
+    } else {
+        sdata.iw = 13;
+        sdata.ih = 13;
+    }
     sdata.data = (float *) malloc((sdata.iw*sdata.ih)*sizeof(float));
     if (!sdata.data) {
         fmerrmsg(where,"Could not allocate memory");
@@ -356,31 +373,33 @@ int main(int argc, char *argv[]) {
                      * This block should probably be extracted into a
                      * subroutine/function...
                      */
-                    for (m=0;m<3;m++) {
-                        if (return_product_area(gpos, ipd.h, 
-                                    ipd.d[m+3].data, &sdata) != 0) {
-                            fmerrmsg(where,
-                                    " Did not find valid geom data for station %s %s",
-                                    stl.id[k].name,
-                                    "although flux data were found...");
-                            continue;
-                        }
-                        /*
-                         * Average obs geom estimates use val obs found for
-                         * fluxes.
-                         */
-                        meanvalues[m] = 0.;
-                        geomobs = 0;
-                        if (sdata.iw == 1 && sdata.ih == 1) {
-                            meanvalues[m] = *(sdata.data);
-                        } else {
-                            for (l=0; l<(sdata.iw*sdata.ih); l++) {
-                                if (sdata.data[l] >= 0) {
-                                    meanvalues[m] += sdata.data[l];
-                                    geomobs++;
-                                }
+                    if (!dflg) {
+                        for (m=0;m<3;m++) {
+                            if (return_product_area(gpos, ipd.h, 
+                                        ipd.d[m+3].data, &sdata) != 0) {
+                                fmerrmsg(where,
+                                        " Did not find valid geom data for station %s %s",
+                                        stl.id[k].name,
+                                        "although flux data were found...");
+                                continue;
                             }
-                            meanvalues[m] /= (float) geomobs;
+                            /*
+                             * Average obs geom estimates use val obs found for
+                             * fluxes.
+                             */
+                            meanvalues[m] = 0.;
+                            geomobs = 0;
+                            if (sdata.iw == 1 && sdata.ih == 1) {
+                                meanvalues[m] = *(sdata.data);
+                            } else {
+                                for (l=0; l<(sdata.iw*sdata.ih); l++) {
+                                    if (sdata.data[l] >= 0) {
+                                        meanvalues[m] += sdata.data[l];
+                                        geomobs++;
+                                    }
+                                }
+                                meanvalues[m] /= (float) geomobs;
+                            }
                         }
                     }
 
@@ -389,39 +408,41 @@ int main(int argc, char *argv[]) {
                      * This block should probably be extracted into a
                      * subroutine/function...
                      */
-                    if ((ipd.h.z == 7) && 
-                            (strcmp(ipd.d[6].description,"CM") == 0)) {
-                        if (return_product_area(gpos, ipd.h, 
-                                    cmdata, &sdata) != 0) {
-                            fmerrmsg(where,
-                                    " Did not find valid CM data for station %s %s\n",
-                                    stl.id[j].name,
-                                    "although flux data were found...");
-                            continue;
-                        }
-                        /*
-                         * Average CM used val obs found for fluxes.
-                         */
-                        meancm = 0.;
-                        cmobs = 0;
-                        if (sdata.iw == 1 && sdata.ih == 1) {
-                            if (*(sdata.data) >= 0.99 && *(sdata.data) <= 4.01) {
-                                meancm = 1;
-                            } else if (*(sdata.data) >= 4.99 && *(sdata.data) <= 19.01) {
-                                meancm = 2;
+                    if (!dflg) {
+                        if ((ipd.h.z == 7) && 
+                                (strcmp(ipd.d[6].description,"CM") == 0)) {
+                            if (return_product_area(gpos, ipd.h, 
+                                        cmdata, &sdata) != 0) {
+                                fmerrmsg(where,
+                                        " Did not find valid CM data for station %s %s\n",
+                                        stl.id[j].name,
+                                        "although flux data were found...");
+                                continue;
                             }
-                        } else {
-                            for (l=0; l<(sdata.iw*sdata.ih); l++) {
-                                if (sdata.data[l] >= 0.99 && sdata.data[l] <= 4.01) {
-                                    meancm += 1;
-                                    cmobs++;
-                                } else if (sdata.data[l] >= 4.99 && sdata.data[l] <= 19.01) {
-                                    meancm += 2;
-                                    cmobs++;
+                            /*
+                             * Average CM used val obs found for fluxes.
+                             */
+                            meancm = 0.;
+                            cmobs = 0;
+                            if (sdata.iw == 1 && sdata.ih == 1) {
+                                if (*(sdata.data) >= 0.99 && *(sdata.data) <= 4.01) {
+                                    meancm = 1;
+                                } else if (*(sdata.data) >= 4.99 && *(sdata.data) <= 19.01) {
+                                    meancm = 2;
                                 }
+                            } else {
+                                for (l=0; l<(sdata.iw*sdata.ih); l++) {
+                                    if (sdata.data[l] >= 0.99 && sdata.data[l] <= 4.01) {
+                                        meancm += 1;
+                                        cmobs++;
+                                    } else if (sdata.data[l] >= 4.99 && sdata.data[l] <= 19.01) {
+                                        meancm += 2;
+                                        cmobs++;
+                                    }
 
+                                }
+                                meancm /= (float) cmobs;
                             }
-                            meancm /= (float) cmobs;
                         }
                     }
 
@@ -486,21 +507,28 @@ int main(int argc, char *argv[]) {
                      * cause evening observations during month changes to
                      * be missed, but this is not a major problem...
                      */
-                    if (ipd.h.minute > 10) {
-                        if (ipd.h.hour == 23) {
-                            sprintf(timeid,"%04d%02d%02d0000", 
+                    if (dflg) {
+                        sprintf(timeid,"%04d%02d%02d", 
+                            ipd.h.year, ipd.h.month, ipd.h.day);
+                    } else {
+                        if (ipd.h.minute > 10) {
+                            if (ipd.h.hour == 23) {
+                                sprintf(timeid,"%04d%02d%02d0000", 
                                     ipd.h.year, ipd.h.month, (ipd.h.day+1));
+                            } else {
+                                sprintf(timeid,"%04d%02d%02d%02d00", 
+                                    ipd.h.year, ipd.h.month, ipd.h.day, (ipd.h.hour+1));
+                            }
                         } else {
                             sprintf(timeid,"%04d%02d%02d%02d00", 
-                                    ipd.h.year, ipd.h.month, ipd.h.day, (ipd.h.hour+1));
-                        }
-                    } else {
-                        sprintf(timeid,"%04d%02d%02d%02d00", 
                                 ipd.h.year, ipd.h.month, ipd.h.day, ipd.h.hour);
+                        }
                     }
                     if (stl.id[k].number == (*std)[k].id) {
+                        meanobs = 0;
+                        noobs = 0;
                         for (h=0; h<NO_MONTHOBS; h++) {
-                            if (strncmp(timeid,(*std)[k].param[h].date,12) == 0) {
+                            if (strstr((*std)[k].param[h].date,timeid)) {
                                 /*
                                  * First print representative acquisition
                                  * time for satellite based estimates.
@@ -516,7 +544,11 @@ int main(int argc, char *argv[]) {
                                  * satellites and the different view
                                  * perspective from ground and space.
                                  */
-                                fprintf(fp,
+                                if (dflg) {
+                                    fprintf(fp, " %7.2f %3d", 
+                                        meanflux, (sdata.iw*sdata.ih));
+                                } else {
+                                    fprintf(fp,
                                         " %7.2f %3d %3d %s %.2f %.2f %.2f %.2f", 
                                         meanflux, novalobs, 
                                         (sdata.iw*sdata.ih),
@@ -524,19 +556,37 @@ int main(int argc, char *argv[]) {
                                         meanvalues[0], 
                                         meanvalues[1], meanvalues[2],
                                         meancm);
+                                }
                                 /*
                                  * Dump all information concerning
                                  * observations. 
                                  */
-                                fprintf(fp," %12s %5d %7.2f %7.2f %7.2f", 
+                                if (dflg) {
+                                    for (n=1;n<=24;n++) {
+                                        if ((*std)[k].param[h+n].Q0 > misval) {
+                                            meanobs += (*std)[k].param[h+n].Q0;
+                                            noobs++;
+                                        }
+                                    }
+                                    if (noobs == 0) {
+                                        /* 
+                                         * Should write missing values...
+                                         */
+                                        break;
+                                    }
+                                    meanobs /= (float) noobs;
+                                    fprintf(fp," %d %7.2f",
+                                        (*std)[k].id,meanobs);
+                                    fprintf(fp,"\n");
+                                    break;
+                                } else {
+                                    fprintf(fp," %12s %5d %7.2f %7.2f %7.2f", 
                                         (*std)[k].param[h].date, (*std)[k].id,
                                         (*std)[k].param[h].TTM,
                                         (*std)[k].param[h].Q0,
                                         (*std)[k].param[h].ST);
-                                /*
-                                 * Insert newline to mark record.
-                                 */
-                                fprintf(fp,"\n");
+                                    fprintf(fp,"\n");
+                                }
                             }
                         }
                     }
@@ -557,7 +607,7 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval_hour [-a] -s <start_time> -e <end_time>");
+    fprintf(stdout," fluxval_hour [-ad] -s <start_time> -e <end_time>");
     fprintf(stdout," -p <area> -i <stlist> -o <output>\n");
     fprintf(stdout,"     start_time: yyyymmddhh\n");
     fprintf(stdout,"     end_time: yyyymmddhh\n");
@@ -565,6 +615,7 @@ void usage(void) {
     fprintf(stdout,"     stlist: ASCII file containing station ids\n");
     fprintf(stdout,"     output: filename and path (ASCII file)\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
+    fprintf(stdout,"     -d: process daily products\n");
     fprintf(stdout,"\n");
 
     exit(FM_OK);
