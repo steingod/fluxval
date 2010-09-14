@@ -1,5 +1,14 @@
-So far only fluxval_hour have been fixed properly. Still some work should
-be done...
+Øystein Godøy, METNO/FOU, 14.09.2010 
 
-Øystein Godøy, METNO/FOU, 13.09.2010
+STATUS
+======
+Passage and daily estimates are now validated against Bioforsk stations
+using the same executable but different command line options.
 
+
+TODO
+====
+  - Extract handling of cloud mask and observation geometry for passage
+    products into separate functions to create a nicer software outline.
+  - Add support for DLI estimates and observations.
+  - Add support for iAOOS-data.
