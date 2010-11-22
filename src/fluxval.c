@@ -607,7 +607,7 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval_hour [-ad] -s <start_time> -e <end_time>");
+    fprintf(stdout," fluxval [-ad] -s <start_time> -e <end_time>");
     fprintf(stdout," -p <area> -i <stlist> -o <output>\n");
     fprintf(stdout,"     start_time: yyyymmddhh\n");
     fprintf(stdout,"     end_time: yyyymmddhh\n");
