@@ -50,7 +50,10 @@
 #define PATHLEN 100
 #define FILENAMELEN 512
 #define PRODUCTPATH "/fou/sat/steingod/osisaf_data/output/flux/ssi/product/"
+/*
 #define DAILYPATH "/fou/sat/steingod/osisaf_data/output/flux/ssi/daily/"
+*/
+#define DAILYPATH "/disk1/testdata/osisaf_data/output/ssi/daily/"
 #define STARCPATH "/starc/DNMI_SAFOSI/"
 #define MAXFILES 250
 #define DEG2RAD PI/180.		/* Factor to multiply with to get radians */

@@ -65,6 +65,8 @@
  * Øystein Godøy, METNO/FOU, 14.09.2010: Included validation of both
  * passage and daily estimates in the same main program for easier
  * maintenance in the future.
+ * Øystein Godøy, METNO/FOU, 22.11.2010: Added option to circumvent /starc
+ * for testing purposes.
  *
  * VERSION:
  * $Id$
@@ -78,12 +80,13 @@
 int main(int argc, char *argv[]) {
 
     extern char *optarg;
-    char *where="fluxval_hour";
+    char *where="fluxval";
     char dir2read[FMSTRING512];
-    char *outfile, *infile, *stfile, *parea, *fntest;
+    char *outfile, *infile, *indir, *stfile, *parea, *fntest;
     char stime[11], etime[11], timeid[11];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
+    short rflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -106,7 +109,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "as:e:p:i:o:d")) != EOF) {
+    while ((i = getopt(argc, argv, "as:e:p:i:o:dr:")) != EOF) {
         switch (i) {
             case 's':
                 strcpy(stime,optarg);
@@ -133,6 +136,12 @@ int main(int argc, char *argv[]) {
                 if (!outfile) exit(FM_MEMALL_ERR);
                 if (sprintf(outfile,"%s",optarg) < 0) exit(FM_IO_ERR);
                 oflg++;
+                break;
+            case 'r':
+                indir = (char *) malloc(FILENAMELEN);
+                if (!indir) exit(FM_MEMALL_ERR);
+                if (sprintf(indir,"%s",optarg) < 0) exit(FM_IO_ERR);
+                rflg++;
                 break;
             case 'a':
                 aflg++;
@@ -198,9 +207,18 @@ int main(int argc, char *argv[]) {
         fmerrmsg(where,"Could not decode end time to fmtime");
         exit(FM_IO_ERR);
     }
-    if (fmstarcdirs(tstartfm,tendfm,&starclist)) {
-        fmerrmsg(where,"Could not create starcdirs to process.");
-        exit(FM_IO_ERR);
+    if (rflg) {
+        starclist.nfiles = 1;
+        if (fmalloc_byte_2d(&(starclist.dirname),1,FMSTRING512)) {
+            fmerrmsg(where,"Could not allocate starclist for single directory");
+            exit(FM_MEMALL_ERR);
+        }
+        sprintf(starclist.dirname[0],"%s",indir);
+    } else {
+        if (fmstarcdirs(tstartfm,tendfm,&starclist)) {
+            fmerrmsg(where,"Could not create starcdirs to process.");
+            exit(FM_IO_ERR);
+        }
     }
 
     /*
@@ -245,7 +263,11 @@ int main(int argc, char *argv[]) {
     }
     obsmonth = 0;
     for (i=0;i<starclist.nfiles;i++) {
-        sprintf(dir2read,"%s/%s/ssi",STARCPATH,starclist.dirname[i]);
+        if (rflg) {
+            sprintf(dir2read,"%s",starclist.dirname[0]);
+        } else {
+            sprintf(dir2read,"%s/%s/ssi",STARCPATH,starclist.dirname[i]);
+        }
         if (fmreaddir(dir2read, &filelist)) {
             fmerrmsg(where,"Could not read content of %s", 
                     dir2read);
@@ -608,7 +630,7 @@ void usage(void) {
 
     fprintf(stdout,"\n");
     fprintf(stdout," fluxval [-ad] -s <start_time> -e <end_time>");
-    fprintf(stdout," -p <area> -i <stlist> -o <output>\n");
+    fprintf(stdout," [-p <area>] -i <stlist> -o <output>\n");
     fprintf(stdout,"     start_time: yyyymmddhh\n");
     fprintf(stdout,"     end_time: yyyymmddhh\n");
     fprintf(stdout,"     area: ns | nr | at | gr\n");
