@@ -1,6 +1,6 @@
 /*
  * NAME:
- * qc_auto_obs.h
+ * fluxval_readobs.h
  * 
  * PURPOSE:
  * Header file for reading of automatic stations.
@@ -19,7 +19,13 @@
  *
  * AUTHOR:
  * Øystein Godøy, DNMI/FOU, 27/07/2000
+ *
+ * MODIFIED:
  * Øystein Godøy, DNMI/FOU, 07.07.2003
+ * Øystein Godøy, METNO/FOU, 2011-02-11: Changed interface to function.
+ *
+ * ID:
+ * $Id$
  */
 
 #include <stdlib.h>
@@ -33,10 +39,7 @@
 #define NO_MONTHOBS 750
 #define OBSRECLEN 350
 
-/*
 #define DATAPATH "/opdata/automat/data/"
-*/
-#define DATAPATH "/disk1/data/radflux/bioforsk/formatted/"
 
 typedef struct {
     int number;
@@ -94,10 +97,10 @@ typedef struct {
 /*
  * Function prototypes.
  */
-short decode_stlist(char *filename, stlist *stl);
-short create_stlist(int size, stlist *pts);
+int decode_stlist(char *filename, stlist *stl);
+int create_stlist(int size, stlist *pts);
 void copy_stlist(stlist *lhs, stlist *rhs);
 void clear_stlist(stlist *pts);
 int create_stdata(stdata **pt, int size);
 int clear_stdata(stdata **pt, int size);
-short qc_auto_obs_read(int year, short month, stlist stl, stdata **std);
+int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std);

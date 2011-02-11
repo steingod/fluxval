@@ -1,6 +1,6 @@
 /*
  * NAME:
- * qc_auto.h
+ * fluxval.h
  * 
  * PURPOSE:
  * Header file for the software performing quality control of SSI data
@@ -8,7 +8,7 @@
  * be extended in the future).
  *
  * NOTES:
- * See qc_auto.c
+ * See fluxval.c
  *
  * AUTHOR:
  * Øystein Godøy, DNMI/fou, 27/07/2000
@@ -49,11 +49,8 @@
  */
 #define PATHLEN 100
 #define FILENAMELEN 512
-#define PRODUCTPATH "/fou/sat/steingod/osisaf_data/output/flux/ssi/product/"
-/*
-#define DAILYPATH "/fou/sat/steingod/osisaf_data/output/flux/ssi/daily/"
-*/
-#define DAILYPATH "/disk1/testdata/osisaf_data/output/ssi/daily/"
+#define PRODUCTPATH "/disk1/testdata/osisaf_data/output/flux/ssi/product/"
+#define DAILYPATH "/disk1/testdata/osisaf_data/output/flux/ssi/daily/"
 #define STARCPATH "/starc/DNMI_SAFOSI/"
 #define MAXFILES 250
 #define DEG2RAD PI/180.		/* Factor to multiply with to get radians */

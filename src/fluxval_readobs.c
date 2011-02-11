@@ -26,6 +26,8 @@
  * Øystein Godøy, DNMI/FOU, 07.07.2003
  * Øystein Godøy, METNO/FOU, 01.04.2010: Adapted for new format while
  * awaiting new validation setup using libfmcol.
+ * Øystein Godøy, METNO/FOU, 2011-02-11: Changed interface, changed return
+ * codes to comply with libfmutil.
  *
  * VERSION:
  * $Id$
@@ -34,13 +36,10 @@
 #include <fluxval_readobs.h>
 #include <string.h>
   
-short qc_auto_obs_read(int year, short month, stlist stl, stdata **std) {
+int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std) {
 
-    char *infile, *path = DATAPATH, *dummy;
-    char *errmsg="ERROR(qc_auto_obs): ";
-    char *errmem="Could not allocate memory"; 
-    char *errio="Could not read data";
-    char *errpl="Incorrect parameterlist";
+    char *where="fluxval_readobs";
+    char *infile, *dummy;
     /* while testing
     char *pl1="TTM       TTN       TTX       TJM     TJM20     TJM50       ";
     char *pl2="UUM       UUX        RR       FM2       FG2       FX2        ";
@@ -68,24 +67,24 @@ short qc_auto_obs_read(int year, short month, stlist stl, stdata **std) {
      */
     infile = (char *) malloc(FILELEN*sizeof(char));
     if (!infile) {
-	fprintf(stderr, " %s %s\n", errmsg, errmem);
-	return(2);
+        fmerrmsg(where,"Could not allocate infile");
+	return(FM_MEMALL_ERR);
     }
     if (create_stdata(std, stl.cnt)) {
 	clear_stdata(std, stl.cnt);
-	return(2);
+	return(FM_IO_ERR);
     }
     dummy = (char *) malloc(OBSRECLEN*sizeof(char));
     if (!dummy) {
 	clear_stdata(std, stl.cnt);
-	fprintf(stderr, " %s %s\n", errmsg, errmem);
-	return(2);
+        fmerrmsg(where,"Could not allocate dummy");
+	return(FM_MEMALL_ERR);
     }
     pl = (char *) malloc(OBSRECLEN*sizeof(char));
     if (!pl) {
 	clear_stdata(std, stl.cnt);
-	fprintf(stderr, " %s %s\n", errmsg, errmem);
-	return(2);
+        fmerrmsg(where,"Could not allocate pl");
+	return(FM_MEMALL_ERR);
     }
     sprintf(pl,"%s%s%s",pl1,pl2,pl3);
 
@@ -105,20 +104,19 @@ short qc_auto_obs_read(int year, short month, stlist stl, stdata **std) {
 	 */
 	fp = fopen(infile,"r");
 	if (!fp) {
-	    fprintf(stderr," %s %s %s\n", errmsg,infile,
-		"is missing");
+            fmerrmsg(where,"Could not open %s", infile);
 	    (*std)[i].missing = 1;
 	    continue;
 	}
 
 	if (!fgets(dummy, OBSRECLEN, fp)) {
-	    fprintf(stderr, " %s %s\n", errmsg, errio);
-	    return(1);
+            fmerrmsg(where,"Could not read data.");
+	    return(FM_IO_ERR);
 	}
 	if (!strstr(dummy,pl)) {
-	    fprintf(stderr, " %s %s\n", errmsg, errpl);
-	    fprintf(stderr,"\t%s\n\t%s\n",dummy,pl);
-	    return(1);
+            fmerrmsg(where,"Incorrect parameter list\ngot: %s\nexpected: %s",
+                dummy, pl);
+	    return(FM_IO_ERR);
 	}
 
 	(*std)[i].id = stl.id[i].number;
@@ -217,14 +215,14 @@ int create_stdata(stdata **pt, int size) {
     int i, j;
 
     *pt = (stdata *) malloc(size*sizeof(stdata));
-    if (!(*pt)) return(2);
+    if (!(*pt)) return(FM_MEMALL_ERR);
 
     for (i=0; i<size; i++) {
 	(*pt)[i].missing = 0;
 	(*pt)[i].param = (parlist *) malloc(NO_MONTHOBS*sizeof(parlist));
 	if (!(*pt)[i].param) {
 	    free(*pt);
-	    return(2);
+	    return(FM_MEMALL_ERR);
 	}
 	for (j=0; j<NO_MONTHOBS; j++) {
 	    sprintf((*pt)[i].param[j].date,"xxxxxxxxxxxx");

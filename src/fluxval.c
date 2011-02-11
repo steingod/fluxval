@@ -67,6 +67,8 @@
  * maintenance in the future.
  * Øystein Godøy, METNO/FOU, 22.11.2010: Added option to circumvent /starc
  * for testing purposes.
+ * Øystein Godøy, METNO/FOU, 2011-02-11: Added -m option to specify
+ * directory containing measurements.
  *
  * VERSION:
  * $Id$
@@ -82,11 +84,11 @@ int main(int argc, char *argv[]) {
     extern char *optarg;
     char *where="fluxval";
     char dir2read[FMSTRING512];
-    char *outfile, *infile, *indir, *stfile, *parea, *fntest;
+    char *outfile, *infile, *indir, *stfile, *parea, *fntest, *datadir;
     char stime[11], etime[11], timeid[11];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
-    short rflg = 0;
+    short rflg = 0, mflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -109,13 +111,23 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "as:e:p:i:o:dr:")) != EOF) {
+    while ((i = getopt(argc, argv, "as:e:p:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
+                if (strlen(optarg) != 10) {
+                    fmerrmsg(where,
+                        "stime (%s) is not of appropriate length", optarg);
+                    exit(FM_IO_ERR);
+                }
                 strcpy(stime,optarg);
                 sflg++;
                 break;
             case 'e':
+                if (strlen(optarg) != 10) {
+                    fmerrmsg(where,
+                        "etime (%s) is not of appropriate length", optarg);
+                    exit(FM_IO_ERR);
+                }
                 strcpy(etime,optarg);
                 eflg++;
                 break;
@@ -143,6 +155,12 @@ int main(int argc, char *argv[]) {
                 if (sprintf(indir,"%s",optarg) < 0) exit(FM_IO_ERR);
                 rflg++;
                 break;
+            case 'm':
+                datadir = (char *) malloc(FILENAMELEN);
+                if (!datadir) exit(FM_MEMALL_ERR);
+                if (sprintf(datadir,"%s",optarg) < 0) exit(FM_IO_ERR);
+                mflg++;
+                break;
             case 'a':
                 aflg++;
                 break;
@@ -159,6 +177,11 @@ int main(int argc, char *argv[]) {
      * Check if all necessary information was given at command line.
      */
     if (!sflg || !eflg || !iflg || !oflg) usage();
+    if (!mflg) {
+        datadir = (char *) malloc(FILENAMELEN);
+        if (!datadir) exit(FM_MEMALL_ERR);
+        if (sprintf(datadir,"%s",DATAPATH) < 0) exit(FM_IO_ERR);
+    }
 
     /*
      * Create character string to test filenames against to avoid
@@ -328,7 +351,7 @@ int main(int argc, char *argv[]) {
                         }
                         fmlogmsg(where,
                                 "Reading surface observations of radiative fluxes.");
-                        if (qc_auto_obs_read(ipd.h.year,ipd.h.month, 
+                        if (fluxval_readobs(datadir, ipd.h.year,ipd.h.month, 
                                     stl, std) != 0) {
                             fmerrmsg(where,
                                     "Could not read autostation data\n");
@@ -630,14 +653,17 @@ void usage(void) {
 
     fprintf(stdout,"\n");
     fprintf(stdout," fluxval [-ad] -s <start_time> -e <end_time>");
-    fprintf(stdout," [-p <area>] -i <stlist> -o <output>\n");
+    fprintf(stdout," [-p <area>|-r <satestdir>]|-m <obsdir>");
+    fprintf(stdout," -i <stlist> -o <output>\n");
     fprintf(stdout,"     start_time: yyyymmddhh\n");
     fprintf(stdout,"     end_time: yyyymmddhh\n");
     fprintf(stdout,"     area: ns | nr | at | gr\n");
     fprintf(stdout,"     stlist: ASCII file containing station ids\n");
     fprintf(stdout,"     output: filename and path (ASCII file)\n");
+    fprintf(stdout,"     satestdir: directory to collet satellite estimates from\n");
+    fprintf(stdout,"     obsdir: directory to collet measurements from\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
-    fprintf(stdout,"     -d: process daily products\n");
+    fprintf(stdout,"     -d: process daily products, ignores option -p\n");
     fprintf(stdout,"\n");
 
     exit(FM_OK);
