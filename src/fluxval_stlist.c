@@ -26,13 +26,17 @@
  * AUTHOR:
  * Øystein Godøy, DNMI/FOU, 01/11/2000
  *
+ * MODIFIED:
+ * Øystein Godøy, METNO/FOU, 2011-03-03: Changed prototypes and return
+ * values.
+ *
  * VERSION:
  * $Id$
  */
 
 #include <fluxval_readobs.h>
 
-short decode_stlist(char *filename, stlist *stl) {
+int decode_stlist(char *filename, stlist *stl) {
     char *dummy;
     int size, i;
     FILE *fp;
@@ -67,7 +71,7 @@ short decode_stlist(char *filename, stlist *stl) {
     return(FM_OK);
 }
 
-short create_stlist(int size, stlist *pts) {
+int create_stlist(int size, stlist *pts) {
     int i;
     char *inistr="xxxxxxxxxxxxxxxxxxx\0";
 
@@ -92,7 +96,7 @@ short create_stlist(int size, stlist *pts) {
     return(FM_OK);
 }
 
-void copy_stlist(stlist *lhs, stlist *rhs) { 
+int copy_stlist(stlist *lhs, stlist *rhs) { 
     int size;
 
     if (lhs->cnt) clear_stlist(lhs);
@@ -109,12 +113,14 @@ void copy_stlist(stlist *lhs, stlist *rhs) {
     } else {
 	lhs->id = NULL;
     }
+
+    return(FM_OK);
 }
 
-void clear_stlist(stlist *pts) { 
+int clear_stlist(stlist *pts) { 
     int i;
 
-    if (!pts->cnt) return;
+    if (!pts->cnt) return(FM_MEMALL_ERR);
 
     for(i = 0; i < pts->cnt; i++) {
 	free(pts->id[i].name);

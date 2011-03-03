@@ -411,6 +411,8 @@ int main(int argc, char *argv[]) {
                             }
                         }
                         meanflux /= (float) novalobs;
+                        /* while testing... */
+                        printf("meanflux: %.2f\n", meanflux);
                     }
 
                     /*

@@ -23,6 +23,7 @@
  * MODIFIED:
  * Øystein Godøy, DNMI/FOU, 07.07.2003
  * Øystein Godøy, METNO/FOU, 2011-02-11: Changed interface to function.
+ * Øystein Godøy, METNO/FOU, 2011-03-03: Changed some prototypes.
  *
  * ID:
  * $Id$
@@ -99,8 +100,8 @@ typedef struct {
  */
 int decode_stlist(char *filename, stlist *stl);
 int create_stlist(int size, stlist *pts);
-void copy_stlist(stlist *lhs, stlist *rhs);
-void clear_stlist(stlist *pts);
+int copy_stlist(stlist *lhs, stlist *rhs);
+int clear_stlist(stlist *pts);
 int create_stdata(stdata **pt, int size);
 int clear_stdata(stdata **pt, int size);
 int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std);
