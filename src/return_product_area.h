@@ -17,6 +17,9 @@
  *
  * AUTHOR:
  * Øystein Godøy, DNMI/FOU, 06/11/2000
+ *
+ * ID:
+ * $Id$
  */
 
 #include <stdio.h>

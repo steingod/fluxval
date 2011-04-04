@@ -24,6 +24,8 @@
  * Øystein Godøy, DNMI/FOU, 07.07.2003
  * Øystein Godøy, METNO/FOU, 2011-02-11: Changed interface to function.
  * Øystein Godøy, METNO/FOU, 2011-03-03: Changed some prototypes.
+ * Øystein Godøy, METNO/FOU, 2011-04-04: Added some parameters to be able
+ * to use the same structure to hold IPY-data as Bioforsk data.
  *
  * ID:
  * $Id$
@@ -54,7 +56,7 @@ typedef struct {
 } stlist;
 
 typedef struct {
-    char date[13];	/* Date info. */
+    char date[16];	/* Date info. */
     float TTM;		/* Mean air temp. */
     float TTN;		/* Min. air temp. */
     float TTX;		/* Max. air temp. */
@@ -87,6 +89,7 @@ typedef struct {
     float DX;		/* Max. wind direction ?? */
     float ARR;		/* Extra precipitation instrument (A - for 2 here) */
     float RA;		/* Accumulated precipitation ? */
+    float LW;           /* Longwave irradiance */
 } parlist;
 
 typedef struct {
@@ -105,3 +108,4 @@ int clear_stlist(stlist *pts);
 int create_stdata(stdata **pt, int size);
 int clear_stdata(stdata **pt, int size);
 int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std);
+int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata **std); 

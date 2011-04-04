@@ -29,6 +29,8 @@
  * prepared for realloc use, but it crashes. At present this is excluded and
  * should be persued further in the future...
  *
+ * Experience core dump in clear_stdat when changing year.
+ *
  * AUTHOR:
  * Øystein Godøy, DNMI/FOU, 27/07/2000
  * MODIFIED:
@@ -69,6 +71,8 @@
  * for testing purposes.
  * Øystein Godøy, METNO/FOU, 2011-02-11: Added -m option to specify
  * directory containing measurements.
+ * Øystein Godøy, METNO/FOU, 2011-04-04: Added support for IPY-data and
+ * DLI products. Changed command line options.
  *
  * VERSION:
  * $Id$
@@ -85,10 +89,11 @@ int main(int argc, char *argv[]) {
     char *where="fluxval";
     char dir2read[FMSTRING512];
     char *outfile, *infile, *indir, *stfile, *parea, *fntest, *datadir;
+    char product[FMSTRING16];
     char stime[11], etime[11], timeid[11];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
-    short rflg = 0, mflg = 0;
+    short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -111,7 +116,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "as:e:p:i:o:dr:m:")) != EOF) {
+    while ((i = getopt(argc, argv, "acks:e:p:g:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
                 if (strlen(optarg) != 10) {
@@ -131,11 +136,11 @@ int main(int argc, char *argv[]) {
                 strcpy(etime,optarg);
                 eflg++;
                 break;
-            case 'p':
+            case 'g':
                 parea = (char *) malloc(FILENAMELEN);
                 if (!parea) exit(FM_MEMALL_ERR);
                 if (sprintf(parea,"%s",optarg) < 0) exit(FM_IO_ERR);
-                pflg++;
+                gflg++;
                 break;
             case 'i':
                 stfile = (char *) malloc(FILENAMELEN);
@@ -155,17 +160,27 @@ int main(int argc, char *argv[]) {
                 if (sprintf(indir,"%s",optarg) < 0) exit(FM_IO_ERR);
                 rflg++;
                 break;
+            case 'p':
+                if (sprintf(product,"%s",optarg) < 0) exit(FM_IO_ERR);
+                pflg++;
+                break;
             case 'm':
                 datadir = (char *) malloc(FILENAMELEN);
                 if (!datadir) exit(FM_MEMALL_ERR);
                 if (sprintf(datadir,"%s",optarg) < 0) exit(FM_IO_ERR);
                 mflg++;
                 break;
+            case 'c':
+                cflg++;
+                break;
             case 'a':
                 aflg++;
                 break;
             case 'd':
                 dflg++;
+                break;
+            case 'k':
+                kflg++;
                 break;
             default:
                 usage();
@@ -176,7 +191,7 @@ int main(int argc, char *argv[]) {
     /*
      * Check if all necessary information was given at command line.
      */
-    if (!sflg || !eflg || !iflg || !oflg) usage();
+    if (!sflg || !eflg || !iflg || !oflg || !pflg) usage();
     if (!mflg) {
         datadir = (char *) malloc(FILENAMELEN);
         if (!datadir) exit(FM_MEMALL_ERR);
@@ -218,7 +233,7 @@ int main(int argc, char *argv[]) {
     }
 
     /*
-     * Loop through products stored at starc
+     * Loop through products stored in starc style
      */
     tstart = ymdh2fmsec1970(stime,0);
     tend = ymdh2fmsec1970(etime,0);
@@ -230,7 +245,12 @@ int main(int argc, char *argv[]) {
         fmerrmsg(where,"Could not decode end time to fmtime");
         exit(FM_IO_ERR);
     }
-    if (rflg) {
+    if (rflg && kflg) {
+        if (fmstarcdirs(tstartfm,tendfm,&starclist)) {
+            fmerrmsg(where,"Could not create starcdirs to process.");
+            exit(FM_IO_ERR);
+        }
+    } else if (rflg) {
         starclist.nfiles = 1;
         if (fmalloc_byte_2d(&(starclist.dirname),1,FMSTRING512)) {
             fmerrmsg(where,"Could not allocate starclist for single directory");
@@ -286,10 +306,12 @@ int main(int argc, char *argv[]) {
     }
     obsmonth = 0;
     for (i=0;i<starclist.nfiles;i++) {
-        if (rflg) {
+        if (rflg && kflg) {
+            sprintf(dir2read,"%s/%s/%s",indir,starclist.dirname[i],product);
+        } else if (rflg) {
             sprintf(dir2read,"%s",starclist.dirname[0]);
         } else {
-            sprintf(dir2read,"%s/%s/ssi",STARCPATH,starclist.dirname[i]);
+            sprintf(dir2read,"%s/%s/%s",STARCPATH,starclist.dirname[i],product);
         }
         if (fmreaddir(dir2read, &filelist)) {
             fmerrmsg(where,"Could not read content of %s", 
@@ -351,11 +373,22 @@ int main(int argc, char *argv[]) {
                         }
                         fmlogmsg(where,
                                 "Reading surface observations of radiative fluxes.");
-                        if (fluxval_readobs(datadir, ipd.h.year,ipd.h.month, 
-                                    stl, std) != 0) {
-                            fmerrmsg(where,
-                                    "Could not read autostation data\n");
-                            exit(FM_OK);
+                        if (cflg) {
+                            if (fluxval_readobs_ascii(datadir, 
+                                        ipd.h.year,ipd.h.month, 
+                                        stl, std) != 0) {
+                                fmerrmsg(where,
+                                        "Could not read autostation data\n");
+                                exit(FM_OK);
+                            }
+                        } else {
+                            if (fluxval_readobs(datadir, 
+                                        ipd.h.year,ipd.h.month, 
+                                        stl, std) != 0) {
+                                fmerrmsg(where,
+                                        "Could not read autostation data\n");
+                                exit(FM_OK);
+                            }
                         }
                         obsmonth = ipd.h.month;
                     }
@@ -411,8 +444,6 @@ int main(int argc, char *argv[]) {
                             }
                         }
                         meanflux /= (float) novalobs;
-                        /* while testing... */
-                        printf("meanflux: %.2f\n", meanflux);
                     }
 
                     /*
@@ -420,7 +451,7 @@ int main(int argc, char *argv[]) {
                      * This block should probably be extracted into a
                      * subroutine/function...
                      */
-                    if (!dflg) {
+                    if (!dflg && strstr(product,"ssi")) {
                         for (m=0;m<3;m++) {
                             if (return_product_area(gpos, ipd.h, 
                                         ipd.d[m+3].data, &sdata) != 0) {
@@ -497,9 +528,7 @@ int main(int argc, char *argv[]) {
                      * If only satellite data are to be extracted around
                      * the stations listed, use the following...
                      */
-                    fmlogmsg(where,"Now data should have been written");
                     if (aflg) {
-                        fmlogmsg(where,"And now they are written");
                         /*
                          * First print representative acquisition
                          * time for satellite based estimates.
@@ -544,7 +573,11 @@ int main(int argc, char *argv[]) {
                      * If surface observations are available and to be
                      * stored in the same file, process these now...
                      */
-                    if ((*std)[k].missing) continue;
+                    if ((*std)[k].missing) {
+                        fmerrmsg(where,
+                        "Observations are not available for station %d",k);
+                        continue;
+                    }
 
                     /*
                      * Checking that sat and obs is from the same hour.
@@ -610,15 +643,23 @@ int main(int argc, char *argv[]) {
                                  */
                                 if (dflg) {
                                     for (n=1;n<=24;n++) {
-                                        if ((*std)[k].param[h+n].Q0 > misval) {
-                                            meanobs += (*std)[k].param[h+n].Q0;
-                                            noobs++;
+                                        if (strstr(product,"ssi")){
+                                            if ((*std)[k].param[h+n].Q0 > misval) {
+                                                meanobs += (*std)[k].param[h+n].Q0;
+                                                noobs++;
+                                            }
+                                        } else {
+                                            if ((*std)[k].param[h+n].LW > misval) {
+                                                meanobs += (*std)[k].param[h+n].LW;
+                                                noobs++;
+                                            }
                                         }
                                     }
                                     if (noobs == 0) {
                                         /* 
                                          * Should write missing values...
                                          */
+                                        fprintf(fp,"\n");
                                         break;
                                     }
                                     meanobs /= (float) noobs;
@@ -627,12 +668,31 @@ int main(int argc, char *argv[]) {
                                     fprintf(fp,"\n");
                                     break;
                                 } else {
-                                    fprintf(fp," %12s %5d %7.2f %7.2f %7.2f", 
-                                        (*std)[k].param[h].date, (*std)[k].id,
-                                        (*std)[k].param[h].TTM,
-                                        (*std)[k].param[h].Q0,
-                                        (*std)[k].param[h].ST);
-                                    fprintf(fp,"\n");
+                                    if (cflg) {
+                                        if (strstr(product,"ssi")) {
+                                            fprintf(fp,
+                                                " %12s %5d %7.2f", 
+                                                (*std)[k].param[h].date, 
+                                                (*std)[k].id,
+                                                (*std)[k].param[h].Q0);
+                                        } else {
+                                            fprintf(fp,
+                                                " %12s %5d %7.2f", 
+                                                (*std)[k].param[h].date, 
+                                                (*std)[k].id,
+                                                (*std)[k].param[h].LW);
+                                        }
+                                        fprintf(fp,"\n");
+                                    } else {
+                                        fprintf(fp,
+                                            " %12s %5d %7.2f %7.2f %7.2f", 
+                                            (*std)[k].param[h].date, 
+                                            (*std)[k].id,
+                                            (*std)[k].param[h].TTM,
+                                            (*std)[k].param[h].Q0,
+                                            (*std)[k].param[h].ST);
+                                        fprintf(fp,"\n");
+                                    }
                                 }
                             }
                         }
@@ -654,18 +714,22 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval [-ad] -s <start_time> -e <end_time>");
-    fprintf(stdout," [-p <area>|-r <satestdir>]|-m <obsdir>");
+    fprintf(stdout," fluxval [-adck] -p <product> ");
+    fprintf(stdout,"-s <start_time> -e <end_time>");
+    fprintf(stdout," [-g <area>|-r <satestdir>] -m <obsdir>");
     fprintf(stdout," -i <stlist> -o <output>\n");
-    fprintf(stdout,"     start_time: yyyymmddhh\n");
-    fprintf(stdout,"     end_time: yyyymmddhh\n");
-    fprintf(stdout,"     area: ns | nr | at | gr\n");
-    fprintf(stdout,"     stlist: ASCII file containing station ids\n");
-    fprintf(stdout,"     output: filename and path (ASCII file)\n");
-    fprintf(stdout,"     satestdir: directory to collet satellite estimates from\n");
-    fprintf(stdout,"     obsdir: directory to collet measurements from\n");
+    fprintf(stdout,"     -p product: ssi or dli\n");
+    fprintf(stdout,"     -s start_time: yyyymmddhh\n");
+    fprintf(stdout,"     -e end_time: yyyymmddhh\n");
+    fprintf(stdout,"     -g geographical area: ns | nr | at | gr\n");
+    fprintf(stdout,"     -i stlist: ASCII file containing station ids\n");
+    fprintf(stdout,"     -o output: filename and path (ASCII file)\n");
+    fprintf(stdout,"     -r satestdir: directory to collet satellite estimates from\n");
+    fprintf(stdout,"     -m obsdir: directory to collet measurements from\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
-    fprintf(stdout,"     -d: process daily products, ignores option -p\n");
+    fprintf(stdout,"     -d: process daily products, ignores option -g\n");
+    fprintf(stdout,"     -c: compact observation format (IPY stations etc.)\n");
+    fprintf(stdout,"     -k: segmented data (starc-like)\n");
     fprintf(stdout,"\n");
 
     exit(FM_OK);

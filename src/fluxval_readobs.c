@@ -1,13 +1,10 @@
 /*
  * NAME:
- * qc_auto_obs_read.c
+ * fluxval_readobs.c
  *
  * PURPOSE:
- * To read ASCII files containing observations from automtic stations with
+ * To read ASCII files containing observations from automatic stations with
  * global radiation measurements.
- *
- * NOTES:
- * See qc_auto.c
  *
  * BUGS:
  * Year is only specified using two digits - care has to be taken...
@@ -211,6 +208,94 @@ int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std)
     return(FM_OK);
 }
 
+
+int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata **std) {
+
+    char *where="fluxval_readobs";
+    char *infile, *dummy;
+    char dummytime[FMSTRING32], dummytime2[FMSTRING32];
+    char *pl="\"time\" \"mssi\" \"nssi\" \"mdli\" \"ndli\"";
+    short i;
+    fmtime obstime;
+    int j;
+    FILE *fp;
+
+    /*
+     * Allocate memory required.
+     */
+    infile = (char *) malloc(FILELEN*sizeof(char));
+    if (!infile) {
+        fmerrmsg(where,"Could not allocate infile");
+	return(FM_MEMALL_ERR);
+    }
+    if (create_stdata(std, stl.cnt)) {
+	clear_stdata(std, stl.cnt);
+	return(FM_IO_ERR);
+    }
+    dummy = (char *) malloc(OBSRECLEN*sizeof(char));
+    if (!dummy) {
+	clear_stdata(std, stl.cnt);
+        fmerrmsg(where,"Could not allocate dummy");
+	return(FM_MEMALL_ERR);
+    }
+
+    for (i=0; i<stl.cnt; i++) {
+	/*
+	 * Create filenames to read using year, month and station number
+	 * specification (mm0sssss.cyy).
+	 */
+        sprintf(infile,"%s/radflux_%s_%4d%02d.txt",
+                path,stl.id[i].name,year,month);
+	fprintf(stdout," Reading autostation file: %s\n", infile);
+
+	/*
+	 * Open the specified list of stations and read data into data
+	 * structure.  Must read first line and the deceide how to read
+	 * data (number of parameters vary). 
+	 */
+	fp = fopen(infile,"r");
+	if (!fp) {
+            fmerrmsg(where,"Could not open %s", infile);
+	    (*std)[i].missing = 1;
+	    continue;
+	}
+
+	if (!fgets(dummy, OBSRECLEN, fp)) {
+            fmerrmsg(where,"Could not read data.");
+	    return(FM_IO_ERR);
+	}
+	if (!strstr(dummy,pl)) {
+            fmerrmsg(where,"Incorrect parameter list\ngot: %s\nexpected: %s",
+                dummy, pl);
+	    return(FM_IO_ERR);
+	}
+
+	(*std)[i].id = stl.id[i].number;
+	j = 0;
+	while (fgets(dummy, OBSRECLEN, fp)) {
+	    sscanf(dummy,
+		"%s%s%f%*f%f%*f",
+		dummytime, dummytime2,
+		&((*std)[i]).param[j].Q0,
+		&((*std)[i]).param[j].LW); 
+            strcat(dummytime," ");
+            strcat(dummytime, dummytime2);
+            fmstring2fmtime(dummytime,"YYYY-MM-DD hh:mm:ss",&obstime);
+            sprintf((*std)[i].param[j].date,"%4d%02d%02d%02d%02d%02d",
+                    obstime.fm_year,obstime.fm_mon,obstime.fm_mday,
+                    obstime.fm_hour,obstime.fm_min,obstime.fm_sec);
+            j++;
+        }
+    }
+
+    /*
+     * Clean up before function is left.
+     */
+    free(infile);
+    free(dummy);
+    return(FM_OK);
+}
+
 int create_stdata(stdata **pt, int size) {
     int i, j;
 
@@ -244,6 +329,7 @@ int create_stdata(stdata **pt, int size) {
 	    (*pt)[i].param[j].TGX=-999.;
 	    (*pt)[i].param[j].ST=-999.;
 	    (*pt)[i].param[j].TT=-999.;
+	    (*pt)[i].param[j].LW=-999.;
 	}
     }
 
@@ -253,6 +339,7 @@ int create_stdata(stdata **pt, int size) {
 int clear_stdata(stdata **pt, int size) {
     int i;
 
+    if (size == 0) return(FM_OK);
     for (i=0; i<size; i++) {
 	free((*pt)[i].param);
     }
