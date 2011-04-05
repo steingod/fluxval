@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
     char dir2read[FMSTRING512];
     char *outfile, *infile, *indir, *stfile, *parea, *fntest, *datadir;
     char product[FMSTRING16];
-    char stime[11], etime[11], timeid[14], obstime[14];
+    char stime[FMSTRING16], etime[FMSTRING16];
+    char timeid[FMSTRING16], obstime[FMSTRING16];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
     short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0;
@@ -619,9 +620,9 @@ int main(int argc, char *argv[]) {
                                 /* Compensating for roundoff errors in
                                  * time spec. */
                                 sprintf(obstime,"%s",(*std)[k].param[h].date);
+                                obstime[10] = '0';
                                 obstime[11] = '0';
                                 obstime[12] = '0';
-                                obstime[13] = '0';
                             } else {
                                 sprintf(obstime,"%s",(*std)[k].param[h].date);
                             }
