@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <fmutil.h>
 #include <safhdf.h>
+#include <math.h>
 
 #ifndef _RETURN_PRODUCT_AREA
 #define _RETURN_PRODUCT_AREA
