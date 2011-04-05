@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     char dir2read[FMSTRING512];
     char *outfile, *infile, *indir, *stfile, *parea, *fntest, *datadir;
     char product[FMSTRING16];
-    char stime[11], etime[11], timeid[11];
+    char stime[11], etime[11], timeid[14], obstime[14];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
     short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0;
@@ -585,11 +585,14 @@ int main(int argc, char *argv[]) {
 
                     /*
                      * Checking that sat and obs is from the same hour.
-                     * According to Sofus Lystad the observations
+                     * According to Sofus Lystad the Bioforsk observations
                      * represents integration of the last hour, time is
                      * given in UTC. The date specification below might
                      * cause evening observations during month changes to
                      * be missed, but this is not a major problem...
+                     *
+                     * IPY-observations (Arctic stations, Ekofisk) are
+                     * represented at the central time.
                      */
                     if (dflg) {
                         sprintf(timeid,"%04d%02d%02d", 
@@ -612,7 +615,17 @@ int main(int argc, char *argv[]) {
                         meanobs = 0;
                         noobs = 0;
                         for (h=0; h<NO_MONTHOBS; h++) {
-                            if (strstr((*std)[k].param[h].date,timeid)) {
+                            if (cflg) {
+                                /* Compensating for roundoff errors in
+                                 * time spec. */
+                                sprintf(obstime,"%s",(*std)[k].param[h].date);
+                                obstime[11] = '0';
+                                obstime[12] = '0';
+                                obstime[13] = '0';
+                            } else {
+                                sprintf(obstime,"%s",(*std)[k].param[h].date);
+                            }
+                            if (strstr(obstime,timeid)) {
                                 /*
                                  * First print representative acquisition
                                  * time for satellite based estimates.
