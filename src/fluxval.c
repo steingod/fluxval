@@ -451,7 +451,11 @@ int main(int argc, char *argv[]) {
                      * This block should probably be extracted into a
                      * subroutine/function...
                      */
-                    if (!dflg && strstr(product,"ssi")) {
+                    for (m=0;m<3;m++) {
+                        meanvalues[m] = 0.;
+                    }
+                    meancm = 0.;
+                    if (!dflg && (strstr(product,"ssi")!=NULL)) {
                         for (m=0;m<3;m++) {
                             if (return_product_area(gpos, ipd.h, 
                                         ipd.d[m+3].data, &sdata) != 0) {
