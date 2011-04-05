@@ -604,8 +604,15 @@ int main(int argc, char *argv[]) {
                                 sprintf(timeid,"%04d%02d%02d0000", 
                                     ipd.h.year, ipd.h.month, (ipd.h.day+1));
                             } else {
-                                sprintf(timeid,"%04d%02d%02d%02d00", 
-                                    ipd.h.year, ipd.h.month, ipd.h.day, (ipd.h.hour+1));
+                                if (cflg) {
+                                    sprintf(timeid,"%04d%02d%02d%02d30", 
+                                        ipd.h.year, ipd.h.month, ipd.h.day, 
+                                        ipd.h.hour);
+                                } else {
+                                    sprintf(timeid,"%04d%02d%02d%02d00", 
+                                        ipd.h.year, ipd.h.month, ipd.h.day, 
+                                        (ipd.h.hour+1));
+                                }
                             }
                         } else {
                             sprintf(timeid,"%04d%02d%02d%02d00", 
@@ -620,7 +627,7 @@ int main(int argc, char *argv[]) {
                                 /* Compensating for roundoff errors in
                                  * time spec. */
                                 sprintf(obstime,"%s",(*std)[k].param[h].date);
-                                obstime[10] = '0';
+                                obstime[10] = '3';
                                 obstime[11] = '0';
                                 obstime[12] = '0';
                             } else {
