@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
                         }
                         obsmonth = ipd.h.month;
                     }
-                }	
+                }
                 /*
                  * Store collocated flux estimates and measurements in
                  * file. Below all available stations are looped for each

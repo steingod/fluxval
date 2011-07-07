@@ -33,6 +33,9 @@
 #include <fluxval_readobs.h>
 #include <string.h>
   
+/*
+ * Bioforsk data
+ */
 int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std) {
 
     char *where="fluxval_readobs";
@@ -91,7 +94,7 @@ int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std)
 	 * Create filenames to read using year, month and station number
 	 * specification (mm0sssss.cyy).
 	 */
-	sprintf(infile,"%s%02d0%05d.c%02d",path,month,stl.id[i].number,sy);
+	sprintf(infile,"%s/%02d0%05d.c%02d",path,month,stl.id[i].number,sy);
 	fprintf(stdout," Reading autostation file: %s\n", infile);
 
 	/*
@@ -208,7 +211,9 @@ int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std)
     return(FM_OK);
 }
 
-
+/*
+ * IPY data
+ */
 int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata **std) {
 
     char *where="fluxval_readobs";
