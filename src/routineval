@@ -165,8 +165,6 @@ print RUNF "NOW RUNNING Radiative flux validation\n\n";
 foreach $item1 (sort keys %procchains) {
     print RUNF "Now handling $item1 processing chain\n";
     foreach $item2 (sort keys %{$procchains{$item1}}) {
-	next if ($procchains{$item1}{$item2}{area} eq "daily" ||
-	$procchains{$item1}{$item2}{area} eq "nr"); # while testing
 	print RUNF "Now handling $item2 products\n";
 	# Check the last update of this validation sequence
 	$lastupdated = stat($procchains{$item1}{$item2}{valres});
