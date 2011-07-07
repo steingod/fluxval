@@ -26,19 +26,21 @@
 # MODIFIED:
 # Øystein Godøy, DNMI/FOU, 10/10/2001
 # Adapted for use on LINUX.
+# Øystein Godøy, METNO/FOU, 07.07.2011: Adapted for new structure and new
+# application name fluxval.
 #
 # CVS_ID:
 # $Id$
 #
 
-BASEDIR = /disk1/software
+BASEDIR = /home/steingod/software
 
-FMUTILLIB = $(BASEDIR)/lib 
-FMUTILINC = $(BASEDIR)/include 
-FMIOLIB = $(BASEDIR)/lib 
-FMIOINC = $(BASEDIR)/include 
-OSIHDF5LIB = $(BASEDIR)/lib
-OSIHDF5INC = $(BASEDIR)/include 
+FMUTILLIB = $(BASEDIR)/libs/libfmutil_gfortran/lib 
+FMUTILINC = $(BASEDIR)/libs/libfmutil_gfortran/include 
+FMIOLIB = $(BASEDIR)/libs/libfmio_gfortran/lib 
+FMIOINC = $(BASEDIR)/libs/libfmio_gfortran/include 
+OSIHDF5LIB = $(BASEDIR)/libs/libosihdf5_gfortran/lib
+OSIHDF5INC = $(BASEDIR)/libs/libosihdf5_gfortran/include 
 HDF5LIB = ./
 HDF5INC = ./
 PROJLIB = ./
@@ -103,7 +105,7 @@ PARFILES = \
 # Specify jobfiles as required
 # These will be installed properly if make install is executed.
 
-JOBFILES = run_job
+JOBFILES = run_job routineval
 
 # Do not know whether this works on IRIX yet... Do not use until known...
 #SRCS := $(patsubst %.o,%.c,$(OBJS))
@@ -138,19 +140,15 @@ rambo:
 	-rm -f $(RUNFILE1) $(RUNFILE2)
 
 install:
-	install -d $(MODROOT)/bin
+	install -d $(MODROOT)/../bin
 ifdef RUNFILE1
-	install $(RUNFILE1) $(MODROOT)/bin
+	install $(RUNFILE1) $(MODROOT)/../bin
 endif
 ifdef RUNFILE2
-	install $(RUNFILE2) $(MODROOT)/bin
+	install $(RUNFILE2) $(MODROOT)/../bin
 endif
 	install -d $(MODROOT)/job
 ifdef JOBFILES
-	install $(JOBFILES) $(MODROOT)/job
-endif
-	install -d $(MODROOT)/par
-ifdef PARFILES
-	install -m 644 $(PARFILES) $(MODROOT)/par
+	install $(JOBFILES) $(MODROOT)/../job
 endif
 
