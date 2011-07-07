@@ -1,0 +1,175 @@
+#!/usr/bin/perl -w
+# #################################################################
+# COPYRIGHT:
+# EUMETSAT
+#
+# PRODUCED BY:
+# Norwegian Meteorological Institute (met.no)
+# Research and Development Department
+# P.O.BOX 43 - Blindern, N-0313 OSLO, NORWAY
+#
+# This SW was developed by met.no and the Danish Meteorological
+# Institute (DMI) within the context of the Co-operation Agreement
+# for the development of a pilot SAF on Ocean and Sea Ice.
+# ##################################################################
+# 
+# VERSION:
+# 0.0a
+#
+# PURPOSE:
+# To perform the SAF AVHRR SSI quality control against observations on
+# ground stations for each product area created by the SAF processing 
+# software. 
+#
+# NOTE:
+# This should be included in the main ssi job script in time, but until
+# then crontab requires specific paths...
+#
+# BUGS:
+# NA
+#
+# AUTHOR:
+# Øystein Godøy, DNMI/FOU, 26/03/2002
+# Øystein Godøy, DNMI/FOU, 10/04/2002
+# Validation of nr products added...
+# Øystein Godøy, DNMI/FOU, 05/09/2002
+# Added security copy of files to prevent loosing data due to core
+# dumps...
+# Øystein Godøy, DNMI/FOU, 26.06.2003
+# Adapted structure to the one used elsewhere.
+# Øystein Godøy, met.no/FOU, 02.04.2004
+# Modified for use on Red Hat.
+# Øystein Godøy, met.no/FOU, 16.08.2004
+# Adapted for top level initiation of jobs...
+# Øystein Godøy, METNO/FOU, 07.07.2011: Modified for use outside OSISAF
+# software and for validation of parallel processing chains during
+# development.
+#
+# ID: 
+# $Id$
+#
+
+use warnings;
+use File::Copy;
+#use lib "../../../../OSI_HL_AUX/OSI_HL_JOB";
+#use OSIHLjob qw(:DEFAULT :AVHRR :SSI);
+use strict;
+
+# Declare variables.
+my $verbose = 0; # 1 -> print everything
+my $valssipass = 1;
+my $valssidaily = 0;
+my $valdlipass = 0;
+my $valdlidaily = 0;
+
+# Data paths and executables etc
+#read_paths "../../../../",$verbose;
+my $destdirssi = "/fou/sat/steingod/osisaf_validation/radflux/ssi";
+my $qc_auto_hour = "../bin/qc_auto_hour";
+my $qc_auto_daily = "../bin/qc_auto_daily";
+my $qc_cfg_ns = "../par/stlist_ns.txt";
+my $qc_cfg_nr = "../par/stlist_nr.txt";
+my $qc_cfg_daily = "../par/stlist_daily.txt";
+my $qc_list_ns = $SSI_HR."/qc_list_ns.txt";
+my $qc_list_nr = $SSI_HR."/qc_list_nr.txt";
+my $qc_list_daily = $SSI_FP."/qc_list_daily.txt";
+my $logfile = $SSI_LG."/log_ssi_qc.txt";
+my $errfile = $SSI_LG."/error_ssi_qc.txt";
+my $runfile = $SSI_LG."/processing_ssi_qc";
+
+open RUNF,">$runfile" || die "Unable to open $runfile\n";
+print RUNF "NOW RUNNING qc_auto_*\n\n";
+
+# From time of the collocation file in source directory and current time, 
+# create start and end time for quality control.
+
+# Get last update time for quality control.
+my($qcf_dev,$qcf_ino,$qcf_mode,$qcf_nlink,$qcf_uid,$qcf_gid,
+    $qcf_rdev,$qcf_size,$qcf_atime,$qcf_mtime,$qcf_ctime,$qcf_blksize,
+    $qcf_blocks)=stat($qc_list_ns);
+if (! defined $qcf_mtime) {
+    $qcf_mtime = 0;
+}
+my($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
+    $qcf_wday,$qcf_yday,$qcf_isdst) = gmtime($qcf_mtime);
+
+# Get current time.
+my($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
+    $cur_wday,$cur_yday,$cur_isdst) = gmtime(time);
+
+# To improve safety, create a copy for the file for each week day
+my $filecopy = "$qc_list_ns"."-"."$cur_wday";
+copy($qc_list_ns,$filecopy);
+$filecopy = "$qc_list_nr"."-"."$cur_wday";
+copy($qc_list_nr,$filecopy);
+$filecopy = "$qc_list_daily"."-"."$cur_wday";
+copy($qc_list_daily,$filecopy);
+
+
+# Set up the command to be performed collocating SSI flux estimates from
+# AVHRR data and observed global radiation at Norwegian agricultural
+# stations.
+my($start_time, $end_time, $command, $status);
+$status = 0;
+$start_time = sprintf "%4d%02d%02d%02d",
+    ($qcf_year+1900),($qcf_mon+1),$qcf_mday,$qcf_hour;
+$end_time = sprintf "%4d%02d%02d%02d",
+    ($cur_year+1900),($cur_mon+1),$cur_mday,$cur_hour;
+
+# First hourly products within the ns area is processed
+$command = 
+    "$qc_auto_hour -s $start_time -e $end_time ".
+    "-p ns -i $qc_cfg_ns -o $qc_list_ns";
+$status = system($command);
+$status /= 256;
+warn "qc_auto_hour had trouble [$status] processing ns tiles\n" if ($status);
+print "$command\n" if $verbose;
+
+# Then hourly products within the nr area is processed
+$command = 
+    "$qc_auto_hour -s $start_time -e $end_time ".
+    "-p nr -i $qc_cfg_nr -o $qc_list_nr";
+$status = system($command);
+$status /= 256;
+warn "qc_auto_hour had trouble [$status] processing nr tiles\n" if ($status);
+print "$command\n" if $verbose;
+
+#
+# Then daily products are processed for validation...
+#
+# Get last update time for quality control.
+($qcf_dev,$qcf_ino,$qcf_mode,$qcf_nlink,$qcf_uid,$qcf_gid,
+    $qcf_rdev,$qcf_size,$qcf_atime,$qcf_mtime,$qcf_ctime,$qcf_blksize,
+    $qcf_blocks)=stat($qc_list_daily);
+if (! defined $qcf_mtime) {
+    $qcf_mtime = 0;
+}
+($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
+    $qcf_wday,$qcf_yday,$qcf_isdst) = gmtime($qcf_mtime);
+# Get current time.
+($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
+    $cur_wday,$cur_yday,$cur_isdst) = gmtime(time);
+
+# Set up the command to be performed collocating SSI flux estimates from
+# AVHRR data and observed global radiation at Norwegian agricultural
+# stations.
+#my($start_time, $end_time, $command, $status);
+$status = 0;
+$start_time = sprintf "%4d%02d%02d%02d",
+    ($qcf_year+1900),($qcf_mon+1),$qcf_mday,$qcf_hour;
+$end_time = sprintf "%4d%02d%02d%02d",
+    ($cur_year+1900),($cur_mon+1),$cur_mday,$cur_hour;
+
+# Here the actual collocation command is setup...
+$command = 
+    "$qc_auto_daily -s $start_time -e $end_time ".
+    "-i $qc_cfg_daily -o $qc_list_daily";
+$status = system($command);
+$status /= 256;
+warn "qc_auto_daily had trouble [$status] processing daily products\n" 
+    if ($status);
+print "$command\n" if $verbose;
+
+print RUNF "Finishing...\n";
+close RUNF;
+unlink $runfile;
