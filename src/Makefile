@@ -147,7 +147,7 @@ endif
 ifdef RUNFILE2
 	install $(RUNFILE2) $(MODROOT)/../bin
 endif
-	install -d $(MODROOT)/job
+	install -d $(MODROOT)/../job
 ifdef JOBFILES
 	install $(JOBFILES) $(MODROOT)/../job
 endif
