@@ -167,9 +167,10 @@ foreach $item1 (sort keys %procchains) {
     foreach $item2 (sort keys %{$procchains{$item1}}) {
 	print "Now handling $item2 products\n";
 	# Check the last update of this validation sequence
+	$lastupdated = stat($procchains{$item1}{$item2}{valres});
+	$lastupdated = 0 unless defined $lastupdated;
 	($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
-    $qcf_wday,$qcf_yday,$qcf_isdst) = stat($procchains{$item1}{$item2}{valres});
-	$qcf_mtime = 0 unless defined $qcf_mtime;
+	 $qcf_wday,$qcf_yday,$qcf_isdst) = gmtime($lastupdated);
 	($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
 	 $cur_wday,$cur_yday,$cur_isdst)= gmtime(time);
 	# Create a daily copy of the validation data (rolling archive over
