@@ -64,7 +64,7 @@ my($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
 my($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
     $cur_wday,$cur_yday,$cur_isdst);
 my($start_time, $end_time, $command, $status);
-my $verbose = 0; # 1 -> print everything
+my $verbose = 1; # 1 -> print everything
 my $valssipass = 1;
 my $valssidaily = 0;
 my $valdlipass = 0;
@@ -156,7 +156,7 @@ my %procchains = (
 
 my $ssilogfile = $destdirssi."/log_ssi_qc.txt";
 my $ssierrfile = $destdirssi."/error_ssi_qc.txt";
-my $runfile = $destdirssi."/fluxval_is_running";
+my $runfile = $destdirssi."/fluxval_status.txt";
 
 open RUNF,">$runfile" || die "Unable to open $runfile\n";
 print RUNF "NOW RUNNING Radiative flux validation\n\n";
@@ -165,7 +165,7 @@ print RUNF "NOW RUNNING Radiative flux validation\n\n";
 foreach $item1 (sort keys %procchains) {
     print RUNF "Now handling $item1 processing chain\n";
     foreach $item2 (sort keys %{$procchains{$item1}}) {
-	print "Now handling $item2 products\n";
+	print RUNF "Now handling $item2 products\n";
 	# Check the last update of this validation sequence
 	$lastupdated = stat($procchains{$item1}{$item2}{valres});
 	$lastupdated = 0 unless defined $lastupdated;
@@ -186,6 +186,7 @@ foreach $item1 (sort keys %procchains) {
 	if ($procchains{$item1}{$item2}{area} eq "daily") {
 	    $command = "$binapp -s $start_time -e $end_time ".
 		"-m $obsdir ".
+		"-r $procchains{$item1}{$item2}{srcdir} ".
 		"-p $procchains{$item1}{$item2}{product} ".
 		"-i $procchains{$item1}{$item2}{parlst} ".
 		"-o $procchains{$item1}{$item2}{valres} ".
@@ -193,12 +194,13 @@ foreach $item1 (sort keys %procchains) {
 	} else {
 	    $command = "$binapp -s $start_time -e $end_time ".
 		"-m $obsdir ".
+		"-r $procchains{$item1}{$item2}{srcdir} ".
 		"-p $procchains{$item1}{$item2}{product} ".
 		"-i $procchains{$item1}{$item2}{parlst} ".
 		"-o $procchains{$item1}{$item2}{valres} ".
 		"-g $procchains{$item1}{$item2}{area}";
 	}
-	print "$command\n" if $verbose;
+	print RUNF "$command\n" if $verbose;
 	$status = system($command);
 	$status /= 256;
 	warn "fluxval had trouble [$status] validating $procchains{$item1}{$item2}{product} for $procchains{$item1}{$item2}{product} tiles\n" if ($status);
@@ -208,6 +210,6 @@ foreach $item1 (sort keys %procchains) {
 
 print RUNF "Finishing...\n";
 close RUNF;
-unlink $runfile;
+#unlink $runfile;
 
 exit;
