@@ -63,7 +63,7 @@ my($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
     $qcf_wday,$qcf_yday,$qcf_isdst);
 my($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
     $cur_wday,$cur_yday,$cur_isdst);
-my($start_time, $end_time, $command, $status);
+my($start_time, $end_time, $command, $status, $ret);
 my $verbose = 1; # 1 -> print everything
 my $valssipass = 1;
 my $valssidaily = 0;
@@ -165,6 +165,8 @@ print RUNF "NOW RUNNING Radiative flux validation\n\n";
 foreach $item1 (sort keys %procchains) {
     print RUNF "Now handling $item1 processing chain\n";
     foreach $item2 (sort keys %{$procchains{$item1}}) {
+	next if ($procchains{$item1}{$item2}{area} eq "daily" ||
+	$procchains{$item1}{$item2}{area} eq "nr"); # while testing
 	print RUNF "Now handling $item2 products\n";
 	# Check the last update of this validation sequence
 	$lastupdated = stat($procchains{$item1}{$item2}{valres});
@@ -201,9 +203,10 @@ foreach $item1 (sort keys %procchains) {
 		"-g $procchains{$item1}{$item2}{area}";
 	}
 	print RUNF "$command\n" if $verbose;
-	$status = system($command);
-	$status /= 256;
-	warn "fluxval had trouble [$status] validating $procchains{$item1}{$item2}{product} for $procchains{$item1}{$item2}{product} tiles\n" if ($status);
+	$status = `$command`;
+	print RUNF "$status\n";
+	$ret = $!;
+	warn "fluxval had trouble [$status] validating $procchains{$item1}{$item2}{product} for $procchains{$item1}{$item2}{area} tiles\n" if ($status);
 	
     }
 }
