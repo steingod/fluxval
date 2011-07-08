@@ -32,6 +32,8 @@
 # Øystein Godøy, METNO/FOU, 07.07.2011: Modified for use outside OSISAF
 # software and for validation of parallel processing chains during
 # development.
+# Øystein Godøy, METNO/FOU, 08.07.2011: Added unbuffered output of STDERR
+# and STDOUT, redirected STDERR to STDOUT for fluxval (working??).
 #
 # ID: 
 # $Id$
@@ -145,6 +147,10 @@ my $ssilogfile = $destdirssi."/log_ssi_qc.txt";
 my $ssierrfile = $destdirssi."/error_ssi_qc.txt";
 my $runfile = $destdirssi."/fluxval_status.txt";
 
+# Ensure unbuffered STDOUT and STDERR
+my $oldfh = select STDOUT; $| =1; select $oldfh;
+my $oldfh = select STDERR; $| =1; select $oldfh;
+
 open RUNF,">$runfile" || die "Unable to open $runfile\n";
 print RUNF "NOW RUNNING Radiative flux validation\n\n";
 
@@ -188,7 +194,7 @@ foreach $item1 (sort keys %procchains) {
 		"-g $procchains{$item1}{$item2}{area}";
 	}
 	print RUNF "$command\n" if $verbose;
-	$status = `$command`;
+	$status = `$command 2>&1`;
 	print RUNF "$status\n";
 	$ret = $!;
 	warn "fluxval had trouble [$status] validating $procchains{$item1}{$item2}{product} for $procchains{$item1}{$item2}{area} tiles\n" if ($status);
