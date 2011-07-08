@@ -592,8 +592,14 @@ int main(int argc, char *argv[]) {
                      * cause evening observations during month changes to
                      * be missed, but this is not a major problem...
                      *
-                     * IPY-observations (Arctic stations, Ekofisk) are
-                     * represented at the central time.
+                     * IPY-observations (Arctic stations) are
+                     * represented at the central time. Data are collected
+                     * at 1 minute intervals and transformed into hourly
+                     * estimates, centered at observation time.
+                     *
+                     * Ekofisk are represented by 10 min intervals, where
+                     * each time represents the data from the previous 10
+                     * minutes. Data are reformatted to hourly data.
                      */
                     if (dflg) {
                         sprintf(timeid,"%04d%02d%02d", 
