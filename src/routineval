@@ -53,7 +53,7 @@ my($qcf_sec,$qcf_min,$qcf_hour,$qcf_mday,$qcf_mon,$qcf_year,
     $qcf_wday,$qcf_yday,$qcf_isdst);
 my($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
     $cur_wday,$cur_yday,$cur_isdst);
-my($start_time, $end_time, $command, $status, $ret);
+my($start_time, $end_time, $command, $status, $ret, $oldfh);
 my $verbose = 1; # 1 -> print everything
 my $valssipass = 1;
 my $valssidaily = 0;
@@ -155,8 +155,8 @@ $filecopy = "$runfile"."-"."$cur_wday";
 copy($runfile,$filecopy);
 
 # Ensure unbuffered STDOUT and STDERR
-my $oldfh = select STDOUT; $| =1; select $oldfh;
-my $oldfh = select STDERR; $| =1; select $oldfh;
+$oldfh = select STDOUT; $| =1; select $oldfh;
+$oldfh = select STDERR; $| =1; select $oldfh;
 
 open RUNF,">$runfile" || die "Unable to open $runfile\n";
 print RUNF "NOW RUNNING Radiative flux validation\n\n";
