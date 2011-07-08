@@ -33,7 +33,8 @@
 # software and for validation of parallel processing chains during
 # development.
 # Øystein Godøy, METNO/FOU, 08.07.2011: Added unbuffered output of STDERR
-# and STDOUT, redirected STDERR to STDOUT for fluxval (working??).
+# and STDOUT, redirected STDERR to STDOUT for fluxval (working??). Added
+# rotation of logfile.
 #
 # ID: 
 # $Id$
@@ -146,6 +147,12 @@ my %procchains = (
 my $ssilogfile = $destdirssi."/log_ssi_qc.txt";
 my $ssierrfile = $destdirssi."/error_ssi_qc.txt";
 my $runfile = $destdirssi."/fluxval_status.txt";
+
+# Create a daily copy of the logfile
+($cur_sec,$cur_min,$cur_hour,$cur_mday,$cur_mon,$cur_year,
+ $cur_wday,$cur_yday,$cur_isdst)= gmtime(time);
+$filecopy = "$runfile"."-"."$cur_wday";
+copy($runfile,$filecopy);
 
 # Ensure unbuffered STDOUT and STDERR
 my $oldfh = select STDOUT; $| =1; select $oldfh;
