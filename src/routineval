@@ -35,6 +35,8 @@
 # Øystein Godøy, METNO/FOU, 08.07.2011: Added unbuffered output of STDERR
 # and STDOUT, redirected STDERR to STDOUT for fluxval (working??). Added
 # rotation of logfile.
+# Øystein Godøy, METNO/FOU, 06.09.2011: Changed daily validation station
+# file for BIO data.
 #
 # ID: 
 # $Id$
@@ -92,7 +94,7 @@ my %procchains = (
 	    product => "ssi",
 	    area => "daily",
 	    srcdir => "/opdata/osisaf/output/flux/ssi/daily/",
-	    parlst => "$curwdir/../par/stlist_nr.txt",
+	    parlst => "$curwdir/../par/stlist_daily.txt",
 	    valres => "$destdirssi/ssival_op_daily.txt",
 	},
     },
@@ -115,7 +117,7 @@ my %procchains = (
 	    product => "ssi",
 	    area => "daily",
 	    srcdir => "/fou/sat/osisaf_data/output/flux/ssi/daily/",
-	    parlst => "$curwdir/../par/stlist_nr.txt",
+	    parlst => "$curwdir/../par/stlist_daily.txt",
 	    valres => "$destdirssi/ssival_preop_daily.txt",
 	},
     },
@@ -138,7 +140,7 @@ my %procchains = (
 	    product => "ssi",
 	    area => "daily",
 	    srcdir => "/fou/sat/steingod/osisaf_data/output/flux/ssi/daily/",
-	    parlst => "$curwdir/../par/stlist_nr.txt",
+	    parlst => "$curwdir/../par/stlist_daily.txt",
 	    valres => "$destdirssi/ssival_test_daily.txt",
 	},
     },
