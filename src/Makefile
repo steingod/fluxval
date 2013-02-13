@@ -58,7 +58,7 @@ LDFLAGS = \
   -L$(FMUTILLIB) -lfmutil \
   -L$(PROJLIB) -lproj \
   -L$(OSIHDF5LIB) -losihdf5 \
-  -L$(HDF5LIB) -lhdf5 \
+  $(HDF5LIB)/libhdf5.a \
   -lz -lm 
 
 
