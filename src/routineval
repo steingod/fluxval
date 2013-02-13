@@ -37,6 +37,8 @@
 # rotation of logfile.
 # Øystein Godøy, METNO/FOU, 06.09.2011: Changed daily validation station
 # file for BIO data.
+# Øystein Godøy, METNO/FOU, 13.02.2013: Adapted for precise and new
+# paths.
 #
 # ID: 
 # $Id$
@@ -48,6 +50,8 @@ use Cwd;
 #use lib "../../../../OSI_HL_AUX/OSI_HL_JOB";
 #use OSIHLjob qw(:DEFAULT :AVHRR :SSI);
 use strict;
+
+$|=1;
 
 # Declare variables.
 my($filecopy, $item1, $item2, $item3, $lastupdated, $curtime);
@@ -65,9 +69,9 @@ my $curwdir = getcwd;
 
 # Data paths and executables etc
 #read_paths "../../../../",$verbose;
-my $obsdir = "/fou/sat/steingod/radflux/bioforsk";
-my $destdirssi = "/fou/sat/steingod/osisaf_validation/radflux/ssi";
-my $destdirdli = "/fou/sat/steingod/osisaf_validation/radflux/dli";
+my $obsdir = "/vol/fou/sat/steingod/radflux/bioforsk";
+my $destdirssi = "/vol/fou/sat/steingod/osisaf_validation/radflux/ssi";
+my $destdirdli = "/vol/fou/sat/steingod/osisaf_validation/radflux/dli";
 my $binapp = $curwdir."/../bin/fluxval";
 
 my $qc_cfg_bio_ns = "../par/stlist_ns.txt";
@@ -102,21 +106,21 @@ my %procchains = (
 	ssins => {
 	    product => "ssi",
 	    area => "ns",
-	    srcdir => "/fou/sat/osisaf_data/output/flux/ssi/product/",
+	    srcdir => "/vol/fou/sat/osisaf_data/output/flux/ssi/product/",
 	    parlst => "$curwdir/../par/stlist_ns.txt",
 	    valres => "$destdirssi/ssival_preop_ns.txt",
 	},
 	ssinr => {
 	    product => "ssi",
 	    area => "nr",
-	    srcdir => "/fou/sat/osisaf_data/output/flux/ssi/product/",
+	    srcdir => "/vol/fou/sat/osisaf_data/output/flux/ssi/product/",
 	    parlst => "$curwdir/../par/stlist_nr.txt",
 	    valres => "$destdirssi/ssival_preop_nr.txt",
 	},
 	ssidaily => {
 	    product => "ssi",
 	    area => "daily",
-	    srcdir => "/fou/sat/osisaf_data/output/flux/ssi/daily/",
+	    srcdir => "/vol/fou/sat/osisaf_data/output/flux/ssi/daily/",
 	    parlst => "$curwdir/../par/stlist_daily.txt",
 	    valres => "$destdirssi/ssival_preop_daily.txt",
 	},
@@ -125,21 +129,21 @@ my %procchains = (
 	ssins => {
 	    product => "ssi",
 	    area => "ns",
-	    srcdir => "/fou/sat/steingod/osisaf_data/output/flux/ssi/product/",
+	    srcdir => "/vol/fou/sat/steingod/osisaf_testdata/output/flux/ssi/product/",
 	    parlst => "$curwdir/../par/stlist_ns.txt",
 	    valres => "$destdirssi/ssival_test_ns.txt",
 	},
 	ssinr => {
 	    product => "ssi",
 	    area => "nr",
-	    srcdir => "/fou/sat/steingod/osisaf_data/output/flux/ssi/product/",
+	    srcdir => "/vol/fou/sat/steingod/osisaf_testdata/output/flux/ssi/product/",
 	    parlst => "$curwdir/../par/stlist_nr.txt",
 	    valres => "$destdirssi/ssival_test_nr.txt",
 	},
 	ssidaily => {
 	    product => "ssi",
 	    area => "daily",
-	    srcdir => "/fou/sat/steingod/osisaf_data/output/flux/ssi/daily/",
+	    srcdir => "/vol/fou/sat/steingod/osisaf_testdata/output/flux/ssi/daily/",
 	    parlst => "$curwdir/../par/stlist_daily.txt",
 	    valres => "$destdirssi/ssival_test_daily.txt",
 	},

@@ -33,18 +33,18 @@
 # $Id$
 #
 
-BASEDIR = /home/steingod/software
+BASEDIR = /disk1/software
 
-FMUTILLIB = $(BASEDIR)/libs/libfmutil_gfortran/lib 
-FMUTILINC = $(BASEDIR)/libs/libfmutil_gfortran/include 
-FMIOLIB = $(BASEDIR)/libs/libfmio_gfortran/lib 
-FMIOINC = $(BASEDIR)/libs/libfmio_gfortran/include 
-OSIHDF5LIB = $(BASEDIR)/libs/libosihdf5_gfortran/lib
-OSIHDF5INC = $(BASEDIR)/libs/libosihdf5_gfortran/include 
-HDF5LIB = ./
-HDF5INC = ./
-PROJLIB = ./
-PROJINC = ./
+FMUTILLIB = $(BASEDIR)/fmlibs/lib 
+FMUTILINC = $(BASEDIR)/fmlibs/include 
+FMIOLIB = $(BASEDIR)/fmlibs/lib 
+FMIOINC = $(BASEDIR)/fmlibs/include 
+OSIHDF5LIB = $(BASEDIR)/fmlibs/lib
+OSIHDF5INC = $(BASEDIR)/fmlibs/include 
+HDF5LIB =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/libhdf5/lib
+HDF5INC =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/libhdf5/include
+PROJLIB =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/lib
+PROJINC =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/include
 
 MODROOT = ./
 
