@@ -73,9 +73,8 @@
  * directory containing measurements.
  * Øystein Godøy, METNO/FOU, 2011-04-04: Added support for IPY-data and
  * DLI products. Changed command line options.
- *
- * VERSION:
- * $Id$
+ * Øystein Godøy, METNO/FOU, 2014-02-11: Added reading of data extracted
+ * from KDVH (Bioforsk stations).
  */
 
 #include <fluxval.h>
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
     char timeid[FMSTRING16], obstime[FMSTRING16];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
-    short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0;
+    short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0, bflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "acks:e:p:g:i:o:dr:m:")) != EOF) {
+    while ((i = getopt(argc, argv, "abcks:e:p:g:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
                 if (strlen(optarg) != 10) {
@@ -171,6 +170,9 @@ int main(int argc, char *argv[]) {
                 if (sprintf(datadir,"%s",optarg) < 0) exit(FM_IO_ERR);
                 mflg++;
                 break;
+            case 'b':
+                bflg++;
+                break;
             case 'c':
                 cflg++;
                 break;
@@ -193,6 +195,7 @@ int main(int argc, char *argv[]) {
      * Check if all necessary information was given at command line.
      */
     if (!sflg || !eflg || !iflg || !oflg || !pflg) usage();
+    if (bflg && cflg) usage();
     if (!mflg) {
         datadir = (char *) malloc(FILENAMELEN);
         if (!datadir) exit(FM_MEMALL_ERR);
@@ -263,6 +266,10 @@ int main(int argc, char *argv[]) {
             fmerrmsg(where,"Could not create starcdirs to process.");
             exit(FM_IO_ERR);
         }
+    }
+    if (starclist.nfiles == 0) {
+        fmerrmsg(where,"No estimate files found in %s...",indir);
+        printf("%d - %d \n", tstart, tend);
     }
 
     /*
@@ -376,6 +383,14 @@ int main(int argc, char *argv[]) {
                                 "Reading surface observations of radiative fluxes.");
                         if (cflg) {
                             if (fluxval_readobs_ascii(datadir, 
+                                        ipd.h.year,ipd.h.month, 
+                                        stl, std) != 0) {
+                                fmerrmsg(where,
+                                        "Could not read autostation data\n");
+                                exit(FM_OK);
+                            }
+                        } else if (bflg) {
+                            if (fluxval_readobs_ulric(datadir, 
                                         ipd.h.year,ipd.h.month, 
                                         stl, std) != 0) {
                                 fmerrmsg(where,
@@ -745,9 +760,9 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval [-adck] -p <product> ");
-    fprintf(stdout,"-s <start_time> -e <end_time>");
-    fprintf(stdout," [-g <area>|-r <satestdir>] -m <obsdir>");
+    fprintf(stdout," fluxval [-adckb] -p <product> ");
+    fprintf(stdout," -s <start_time> -e <end_time>");
+    fprintf(stdout," -g <area> -r <satestdir> -m <obsdir>");
     fprintf(stdout," -i <stlist> -o <output>\n");
     fprintf(stdout,"     -p product: ssi or dli\n");
     fprintf(stdout,"     -s start_time: yyyymmddhh\n");
@@ -759,6 +774,7 @@ void usage(void) {
     fprintf(stdout,"     -m obsdir: directory to collet measurements from\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
     fprintf(stdout,"     -d: process daily products, ignores option -g\n");
+    fprintf(stdout,"     -b: Bioforskdata extracted from KDVH\n");
     fprintf(stdout,"     -c: compact observation format (IPY stations etc.)\n");
     fprintf(stdout,"     -k: segmented data (starc-like)\n");
     fprintf(stdout,"\n");

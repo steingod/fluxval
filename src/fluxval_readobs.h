@@ -109,3 +109,4 @@ int create_stdata(stdata **pt, int size);
 int clear_stdata(stdata **pt, int size);
 int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std);
 int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata **std); 
+int fluxval_readobs_ulric(char *path, int year, short month, stlist stl, stdata **std); 

@@ -55,13 +55,13 @@ int decode_stlist(char *filename, stlist *stl) {
     i = 0;
     printf(" Using stations:\n");
     while (fgets(dummy,ST_RECLEN,fp)) {
-	sscanf(dummy,"%s%d%f%f",
-	    stl->id[i].name,&(stl->id[i].number),
-	    &(stl->id[i].lat),&(stl->id[i].lon));
-	printf(" %s %d %.2f %.2f\n", 
-		stl->id[i].name,stl->id[i].number,
-		stl->id[i].lat,stl->id[i].lon);
-	i++;
+        sscanf(dummy,"%s%d%f%f",
+                stl->id[i].name,&(stl->id[i].number),
+                &(stl->id[i].lat),&(stl->id[i].lon));
+        printf(" %s %d %.2f %.2f\n", 
+                stl->id[i].name,stl->id[i].number,
+                stl->id[i].lat,stl->id[i].lon);
+        i++;
     }
 
     fclose(fp);
@@ -76,22 +76,22 @@ int create_stlist(int size, stlist *pts) {
     char *inistr="xxxxxxxxxxxxxxxxxxx\0";
 
     if (size > 0) {
-	pts->id = (stid *) malloc(size*sizeof(stid));
-	if (!pts->id) return(2);
-	pts->cnt = size;
-	for (i = 0; i < pts->cnt; i++){
-	    pts->id[i].name = (char *) malloc(ST_NAMELEN*sizeof(char));
-	    if (!pts->id[i].name) {
-		clear_stlist(pts);
-		return(1);
-	    }
-	    strcpy(pts->id[i].name, inistr);
-	    pts->id[i].number = 0;
-	    pts->id[i].lat = -999.0;
-	    pts->id[i].lon = -999.0;
-	}
+        pts->id = (stid *) malloc(size*sizeof(stid));
+        if (!pts->id) return(2);
+        pts->cnt = size;
+        for (i = 0; i < pts->cnt; i++){
+            pts->id[i].name = (char *) malloc(ST_NAMELEN*sizeof(char));
+            if (!pts->id[i].name) {
+                clear_stlist(pts);
+                return(1);
+            }
+            strcpy(pts->id[i].name, inistr);
+            pts->id[i].number = 0;
+            pts->id[i].lat = -999.0;
+            pts->id[i].lon = -999.0;
+        }
     } else {
-	clear_stlist(pts);
+        clear_stlist(pts);
     }
     return(FM_OK);
 }
@@ -102,16 +102,16 @@ int copy_stlist(stlist *lhs, stlist *rhs) {
     if (lhs->cnt) clear_stlist(lhs);
 
     if (rhs->cnt) {
-	create_stlist(rhs->cnt, lhs);
+        create_stlist(rhs->cnt, lhs);
 
-	for (size = 0;  size < lhs->cnt; size++ ) {
-	    lhs->id[size].name = 
-		(char *) malloc(sizeof(char)*strlen(rhs->id[size].name)+1);
-	    strcpy(lhs->id[size].name,rhs->id[size].name);
-	    lhs->id[size].number = rhs->id[size].number;
-	}
+        for (size = 0;  size < lhs->cnt; size++ ) {
+            lhs->id[size].name = 
+                (char *) malloc(sizeof(char)*strlen(rhs->id[size].name)+1);
+            strcpy(lhs->id[size].name,rhs->id[size].name);
+            lhs->id[size].number = rhs->id[size].number;
+        }
     } else {
-	lhs->id = NULL;
+        lhs->id = NULL;
     }
 
     return(FM_OK);
@@ -123,7 +123,7 @@ int clear_stlist(stlist *pts) {
     if (!pts->cnt) return(FM_MEMALL_ERR);
 
     for(i = 0; i < pts->cnt; i++) {
-	free(pts->id[i].name);
+        free(pts->id[i].name);
     }
 
     pts->cnt = 0;

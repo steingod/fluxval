@@ -48,7 +48,7 @@
  * Variable definitions
  */
 #define PATHLEN 100
-#define FILENAMELEN 512
+#define FILENAMELEN 1024
 #define PRODUCTPATH "/disk1/testdata/osisaf_data/output/flux/ssi/product/"
 #define DAILYPATH "/disk1/testdata/osisaf_data/output/flux/ssi/daily/"
 #define STARCPATH "/starc/DNMI_SAFOSI/"
