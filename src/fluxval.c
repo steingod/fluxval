@@ -702,9 +702,8 @@ int main(int argc, char *argv[]) {
                                         }
                                     }
                                     if (noobs == 0) {
-                                        /* 
-                                         * Should write missing values...
-                                         */
+                                        fprintf(fp," %d %7.2f",
+                                                (*std)[k].id,misval);
                                         fprintf(fp,"\n");
                                         break;
                                     }
