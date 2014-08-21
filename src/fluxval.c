@@ -75,6 +75,8 @@
  * DLI products. Changed command line options.
  * Øystein Godøy, METNO/FOU, 2014-02-11: Added reading of data extracted
  * from KDVH (Bioforsk stations).
+ * Øystein Godøy, METNO/FOU, 2014-08-21: Added support from WMO GTS data
+ * (own ASCII format dumped from BUFR).
  */
 
 #include <fluxval.h>
@@ -93,7 +95,7 @@ int main(int argc, char *argv[]) {
     char timeid[FMSTRING16], obstime[FMSTRING16];
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
-    short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0, bflg = 0;
+    short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0, bflg = 0, wflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -116,7 +118,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "abcks:e:p:g:i:o:dr:m:")) != EOF) {
+    while ((i = getopt(argc, argv, "abcwks:e:p:g:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
                 if (strlen(optarg) != 10) {
@@ -176,6 +178,9 @@ int main(int argc, char *argv[]) {
             case 'c':
                 cflg++;
                 break;
+            case 'w':
+                wflg++;
+                break;
             case 'a':
                 aflg++;
                 break;
@@ -195,7 +200,7 @@ int main(int argc, char *argv[]) {
      * Check if all necessary information was given at command line.
      */
     if (!sflg || !eflg || !iflg || !oflg || !pflg) usage();
-    if (bflg && cflg) usage();
+    if ((bflg && cflg)||(bflg && wflg)||(cflg && wflg)) usage();
     if (!mflg) {
         datadir = (char *) malloc(FILENAMELEN);
         if (!datadir) exit(FM_MEMALL_ERR);
@@ -391,6 +396,14 @@ int main(int argc, char *argv[]) {
                             }
                         } else if (bflg) {
                             if (fluxval_readobs_ulric(datadir, 
+                                        ipd.h.year,ipd.h.month, 
+                                        stl, std) != 0) {
+                                fmerrmsg(where,
+                                        "Could not read autostation data\n");
+                                exit(FM_OK);
+                            }
+                        } else if (wflg) {
+                            if (fluxval_readobs_gts(datadir, 
                                         ipd.h.year,ipd.h.month, 
                                         stl, std) != 0) {
                                 fmerrmsg(where,
@@ -759,9 +772,9 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval [-adckb] -p <product> ");
+    fprintf(stdout," fluxval [-adckbw -g <area>] -p <product> ");
     fprintf(stdout," -s <start_time> -e <end_time>");
-    fprintf(stdout," -g <area> -r <satestdir> -m <obsdir>");
+    fprintf(stdout," -r <satestdir> -m <obsdir>");
     fprintf(stdout," -i <stlist> -o <output>\n");
     fprintf(stdout,"     -p product: ssi or dli\n");
     fprintf(stdout,"     -s start_time: yyyymmddhh\n");
@@ -775,6 +788,7 @@ void usage(void) {
     fprintf(stdout,"     -d: process daily products, ignores option -g\n");
     fprintf(stdout,"     -b: Bioforskdata extracted from KDVH\n");
     fprintf(stdout,"     -c: compact observation format (IPY stations etc.)\n");
+    fprintf(stdout,"     -w: observations extracted from WMO GTS\n");
     fprintf(stdout,"     -k: segmented data (starc-like)\n");
     fprintf(stdout,"\n");
 
