@@ -715,13 +715,13 @@ int main(int argc, char *argv[]) {
                                         }
                                     }
                                     if (noobs == 0) {
-                                        fprintf(fp," %d %7.2f",
+                                        fprintf(fp," %05d %7.2f",
                                                 (*std)[k].id,misval);
                                         fprintf(fp,"\n");
                                         break;
                                     }
                                     meanobs /= (float) noobs;
-                                    fprintf(fp," %d %7.2f",
+                                    fprintf(fp," %05d %7.2f",
                                         (*std)[k].id,meanobs);
                                     fprintf(fp,"\n");
                                     break;
@@ -729,13 +729,13 @@ int main(int argc, char *argv[]) {
                                     if (cflg) {
                                         if (strstr(product,"ssi")) {
                                             fprintf(fp,
-                                                " %12s %5d %7.2f", 
+                                                " %12s %05d %7.2f", 
                                                 (*std)[k].param[h].date, 
                                                 (*std)[k].id,
                                                 (*std)[k].param[h].Q0);
                                         } else {
                                             fprintf(fp,
-                                                " %12s %5d %7.2f", 
+                                                " %12s %05d %7.2f", 
                                                 (*std)[k].param[h].date, 
                                                 (*std)[k].id,
                                                 (*std)[k].param[h].LW);
@@ -743,7 +743,7 @@ int main(int argc, char *argv[]) {
                                         fprintf(fp,"\n");
                                     } else {
                                         fprintf(fp,
-                                            " %12s %5d %7.2f %7.2f %7.2f", 
+                                            " %12s %05d %7.2f %7.2f %7.2f", 
                                             (*std)[k].param[h].date, 
                                             (*std)[k].id,
                                             (*std)[k].param[h].TTM,
