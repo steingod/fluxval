@@ -26,6 +26,8 @@
  * Øystein Godøy, METNO/FOU, 2011-03-03: Changed some prototypes.
  * Øystein Godøy, METNO/FOU, 2011-04-04: Added some parameters to be able
  * to use the same structure to hold IPY-data as Bioforsk data.
+ * Øystein Godøy, METNO/FOU, 2014-08-21: Added reading of observations
+ * from decoded WMO GTS BUFR files.
  *
  * ID:
  * $Id$
@@ -110,3 +112,4 @@ int clear_stdata(stdata **pt, int size);
 int fluxval_readobs(char *path, int year, short month, stlist stl, stdata **std);
 int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata **std); 
 int fluxval_readobs_ulric(char *path, int year, short month, stlist stl, stdata **std); 
+int fluxval_readobs_gts(char *path, int year, short month, stlist stl, stdata **std); 
