@@ -448,9 +448,8 @@ int fluxval_readobs_gts(char *path, int year, short month, stlist stl, stdata **
     for (i=0; i<stl.cnt; i++) {
         /*
          * Create filenames to read using year, month and station number
-         * specification (mm0sssss.cyy).
          */
-        sprintf(infile,"%s/radflux_%d_%04d%02d.txt",
+        sprintf(infile,"%s/radflux_%05d_%4d%02d.txt",
                 path,stl.id[i].number,year,month);
         fprintf(stdout," Reading autostation file: %s\n", infile);
 
