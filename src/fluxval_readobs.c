@@ -273,10 +273,12 @@ int fluxval_readobs_ascii(char *path, int year, short month, stlist stl, stdata 
             fmerrmsg(where,"Could not read data.");
             return(FM_IO_ERR);
         }
-        if (!strstr(dummy,pl)) {
+        j = 0;
+        while (!strstr(dummy,pl)) {
             fmerrmsg(where,"Incorrect parameter list\ngot: %s\nexpected: %s",
                     dummy, pl);
-            return(FM_IO_ERR);
+            j++;
+            if (j>3) return(FM_IO_ERR);
         }
 
         (*std)[i].id = stl.id[i].number;

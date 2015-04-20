@@ -35,16 +35,20 @@
 
 BASEDIR = /disk1/software
 
-FMUTILLIB = $(BASEDIR)/fmlibs/lib 
-FMUTILINC = $(BASEDIR)/fmlibs/include 
-FMIOLIB = $(BASEDIR)/fmlibs/lib 
-FMIOINC = $(BASEDIR)/fmlibs/include 
-OSIHDF5LIB = $(BASEDIR)/fmlibs/lib
-OSIHDF5INC = $(BASEDIR)/fmlibs/include 
-HDF5LIB =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/libhdf5/lib
-HDF5INC =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/libhdf5/include
-PROJLIB =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/lib
-PROJINC =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/include
+FMUTILLIB = $(BASEDIR)/lib 
+FMUTILINC = $(BASEDIR)/include 
+FMIOLIB = $(BASEDIR)/lib 
+FMIOINC = $(BASEDIR)/include 
+OSIHDF5LIB = $(BASEDIR)/lib
+OSIHDF5INC = $(BASEDIR)/include 
+HDF5LIB =  $(BASEDIR)/osisaf_fluxdev_satproj/OSI_HL_AUX/libs/libhdf5/lib
+#HDF5LIB =  /usr/lib
+HDF5INC =  $(BASEDIR)/osisaf_fluxdev_satproj/OSI_HL_AUX/libs/libhdf5/include
+#HDF5INC =  /usr/include
+#PROJLIB =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/lib
+PROJLIB =  /usr/lib
+#PROJINC =  $(BASEDIR)/osisaf_fluxdev/OSI_HL_AUX/libs/PROJ.4/include
+PROJINC =  /usr/lib
 
 MODROOT = ./
 
@@ -59,6 +63,7 @@ LDFLAGS = \
   -L$(PROJLIB) -lproj \
   -L$(OSIHDF5LIB) -losihdf5 \
   $(HDF5LIB)/libhdf5.a \
+  -lpthread \
   -lz -lm 
 
 
