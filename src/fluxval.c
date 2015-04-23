@@ -77,6 +77,7 @@
  * from KDVH (Bioforsk stations).
  * Øystein Godøy, METNO/FOU, 2014-08-21: Added support from WMO GTS data
  * (own ASCII format dumped from BUFR).
+ * Øystein Godøy, METNO/FOU, 2015-04-23: Added support for OSISAF archive.
  */
 
 #include <fluxval.h>
@@ -96,6 +97,7 @@ int main(int argc, char *argv[]) {
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
     short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0, bflg = 0, wflg = 0;
+    short fflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -118,7 +120,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "abcwks:e:p:g:i:o:dr:m:")) != EOF) {
+    while ((i = getopt(argc, argv, "abcwfks:e:p:g:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
                 if (strlen(optarg) != 10) {
@@ -190,6 +192,9 @@ int main(int argc, char *argv[]) {
             case 'k':
                 kflg++;
                 break;
+            case 'f':
+                fflg++;
+                break;
             default:
                 usage();
                 break;
@@ -259,6 +264,11 @@ int main(int argc, char *argv[]) {
             fmerrmsg(where,"Could not create starcdirs to process.");
             exit(FM_IO_ERR);
         }
+    } else if (rflg && fflg) {
+        if (fmsafarcdirs(tstartfm,tendfm,&starclist)) {
+            fmerrmsg(where,"Could not create safarcdirs to process.");
+            exit(FM_IO_ERR);
+        }
     } else if (rflg) {
         starclist.nfiles = 1;
         if (fmalloc_byte_2d(&(starclist.dirname),1,FMSTRING512)) {
@@ -274,7 +284,7 @@ int main(int argc, char *argv[]) {
     }
     if (starclist.nfiles == 0) {
         fmerrmsg(where,"No estimate files found in %s...",indir);
-        printf("%d - %d \n", tstart, tend);
+        printf("%d - %d \n", (int) tstart, (int) tend);
     }
 
     /*
@@ -321,6 +331,8 @@ int main(int argc, char *argv[]) {
     for (i=0;i<starclist.nfiles;i++) {
         if (rflg && kflg) {
             sprintf(dir2read,"%s/%s/%s",indir,starclist.dirname[i],product);
+        } else if (rflg && fflg) {
+            sprintf(dir2read,"%s/%s",indir,starclist.dirname[i]);
         } else if (rflg) {
             sprintf(dir2read,"%s",starclist.dirname[0]);
         } else {
@@ -772,7 +784,7 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval [-adckbw -g <area>] -p <product> ");
+    fprintf(stdout," fluxval [-adcfkbw -g <area>] -p <product> ");
     fprintf(stdout," -s <start_time> -e <end_time>");
     fprintf(stdout," -r <satestdir> -m <obsdir>");
     fprintf(stdout," -i <stlist> -o <output>\n");
@@ -790,6 +802,7 @@ void usage(void) {
     fprintf(stdout,"     -c: compact observation format (IPY stations etc.)\n");
     fprintf(stdout,"     -w: observations extracted from WMO GTS\n");
     fprintf(stdout,"     -k: segmented data (starc-like)\n");
+    fprintf(stdout,"     -f: segmented data (OSISAF archive like)\n");
     fprintf(stdout,"\n");
 
     exit(FM_OK);
