@@ -78,6 +78,8 @@
  * Øystein Godøy, METNO/FOU, 2014-08-21: Added support from WMO GTS data
  * (own ASCII format dumped from BUFR).
  * Øystein Godøy, METNO/FOU, 2015-04-23: Added support for OSISAF archive.
+ * Øystein Godøy, METNO/FOU, 2016-01-21: Added support for 5km daily
+ * files.
  */
 
 #include <fluxval.h>
@@ -97,7 +99,7 @@ int main(int argc, char *argv[]) {
     int h, i, j, k, l, m, n, novalobs, cmobs, geomobs, noobs;
     short sflg = 0, eflg = 0, pflg =0, iflg = 0, oflg = 0, aflg = 0, dflg = 0;
     short rflg = 0, mflg = 0, gflg = 0, cflg = 0, kflg = 0, bflg = 0, wflg = 0;
-    short fflg = 0;
+    short fflg = 0, lflg = 0;
     short status;
     short obsmonth;
     osihdf ipd;
@@ -120,7 +122,7 @@ int main(int argc, char *argv[]) {
      * Decode command line arguments containing path to input files (one for
      * each area produced) and name (and path) of the output file.
      */
-    while ((i = getopt(argc, argv, "abcwfks:e:p:g:i:o:dr:m:")) != EOF) {
+    while ((i = getopt(argc, argv, "ablcwfks:e:p:g:i:o:dr:m:")) != EOF) {
         switch (i) {
             case 's':
                 if (strlen(optarg) != 10) {
@@ -189,6 +191,9 @@ int main(int argc, char *argv[]) {
             case 'd':
                 dflg++;
                 break;
+            case 'l':
+                lflg++;
+                break;
             case 'k':
                 kflg++;
                 break;
@@ -220,6 +225,8 @@ int main(int argc, char *argv[]) {
     if (!fntest) exit(FM_MEMALL_ERR);
     if (dflg) {
         sprintf(fntest,"daily");
+    } else if (lflg) {
+        sprintf(fntest,"24h_hl");
     } else {
         sprintf(fntest,"%s.hdf5",parea);
     }
@@ -247,7 +254,7 @@ int main(int argc, char *argv[]) {
     }
 
     /*
-     * Loop through products stored in starc style
+     * Loop through products stored
      */
     tstart = ymdh2fmsec1970(stime,0);
     tend = ymdh2fmsec1970(etime,0);
@@ -259,12 +266,12 @@ int main(int argc, char *argv[]) {
         fmerrmsg(where,"Could not decode end time to fmtime");
         exit(FM_IO_ERR);
     }
-    if (rflg && kflg) {
+    if (rflg && kflg) { /* starc */
         if (fmstarcdirs(tstartfm,tendfm,&starclist)) {
             fmerrmsg(where,"Could not create starcdirs to process.");
             exit(FM_IO_ERR);
         }
-    } else if (rflg && fflg) {
+    } else if (rflg && fflg) { /* OSISAF archive */
         if (fmsafarcdirs(tstartfm,tendfm,&starclist)) {
             fmerrmsg(where,"Could not create safarcdirs to process.");
             exit(FM_IO_ERR);
@@ -315,7 +322,7 @@ int main(int argc, char *argv[]) {
      * Specifying the size of the data collection box. This should be
      * configurable in the future, but is hardcoded at present...
      */
-    if (dflg) {
+    if (dflg || lflg) {
         sdata.iw = 1;
         sdata.ih = 1;
     } else {
@@ -367,6 +374,8 @@ int main(int argc, char *argv[]) {
                 for (k=0; k<ipd.h.z; k++) {
                     printf("\tBand %d - %s\n", k, ipd.d[k].description);
                 }
+                printf("\tImage width: %d\n",ipd.h.iw);
+                printf("\tImage height: %d\n",ipd.h.ih);
 
                 /*
                  * Transform CM data to float array before further processing.
@@ -496,7 +505,7 @@ int main(int argc, char *argv[]) {
                         meanvalues[m] = 0.;
                     }
                     meancm = 0.;
-                    if (!dflg && (strstr(product,"ssi")!=NULL)) {
+                    if (!dflg && !lflg && (strstr(product,"ssi")!=NULL)) {
                         for (m=0;m<3;m++) {
                             if (return_product_area(gpos, ipd.h, 
                                         ipd.d[m+3].data, &sdata) != 0) {
@@ -531,7 +540,7 @@ int main(int argc, char *argv[]) {
                      * This block should probably be extracted into a
                      * subroutine/function...
                      */
-                    if (!dflg) {
+                    if (!dflg && !lflg) {
                         if ((ipd.h.z == 7) && 
                                 (strcmp(ipd.d[6].description,"CM") == 0)) {
                             if (return_product_area(gpos, ipd.h, 
@@ -641,7 +650,7 @@ int main(int argc, char *argv[]) {
                      * each time represents the data from the previous 10
                      * minutes. Data are reformatted to hourly data.
                      */
-                    if (dflg) {
+                    if (dflg || lflg) {
                         sprintf(timeid,"%04d%02d%02d", 
                             ipd.h.year, ipd.h.month, ipd.h.day);
                     } else {
@@ -695,7 +704,7 @@ int main(int argc, char *argv[]) {
                                  * satellites and the different view
                                  * perspective from ground and space.
                                  */
-                                if (dflg) {
+                                if (dflg || lflg) {
                                     fprintf(fp, " %7.2f %3d", 
                                         meanflux, (sdata.iw*sdata.ih));
                                 } else {
@@ -712,7 +721,7 @@ int main(int argc, char *argv[]) {
                                  * Dump all information concerning
                                  * observations. 
                                  */
-                                if (dflg) {
+                                if (dflg || lflg) {
                                     for (n=1;n<=24;n++) {
                                         if (strstr(product,"ssi")){
                                             if ((*std)[k].param[h+n].Q0 > misval) {
@@ -784,7 +793,7 @@ int main(int argc, char *argv[]) {
 void usage(void) {
 
     fprintf(stdout,"\n");
-    fprintf(stdout," fluxval [-adcfkbw -g <area>] -p <product> ");
+    fprintf(stdout," fluxval [-adlcfkbw -g <area>] -p <product> ");
     fprintf(stdout," -s <start_time> -e <end_time>");
     fprintf(stdout," -r <satestdir> -m <obsdir>");
     fprintf(stdout," -i <stlist> -o <output>\n");
@@ -797,7 +806,8 @@ void usage(void) {
     fprintf(stdout,"     -r satestdir: directory to collet satellite estimates from\n");
     fprintf(stdout,"     -m obsdir: directory to collet measurements from\n");
     fprintf(stdout,"     -a: only store satellite estimates\n");
-    fprintf(stdout,"     -d: process daily products, ignores option -g\n");
+    fprintf(stdout,"     -d: process daily products (in old resolution), ignores option -g\n");
+    fprintf(stdout,"     -l: process daily products (in new resolution), ignores option -g\n");
     fprintf(stdout,"     -b: Bioforskdata extracted from KDVH\n");
     fprintf(stdout,"     -c: compact observation format (IPY stations etc.)\n");
     fprintf(stdout,"     -w: observations extracted from WMO GTS\n");

@@ -36,13 +36,13 @@
 #define MISVAL -99999
 
 int return_product_area(fmgeopos gpos, 
-    PRODhead header, float *data, s_data *a) {
+        PRODhead header, float *data, s_data *a) {
 
     char *where="return_product_area";
     int dx, dy, i, j, k;
     long l, maxsize;
     int nodata = 1;
-    
+
     fmucsref uref;
     fmucspos upos;
     fmindex xyp;
@@ -66,47 +66,47 @@ int return_product_area(fmgeopos gpos,
     */
 
     if ((*a).iw == 1 && (*a).ih == 1) {
-	*((*a).data) = data[fmivec(xyp.col,xyp.row,header.iw)];
-	return(FM_OK);
+        *((*a).data) = data[fmivec(xyp.col,xyp.row,header.iw)];
+        return(FM_OK);
     }
 
     if ((*a).iw%2 == 0 || (*a).ih%2 == 0) {
-	fmerrmsg(where,
-	"The area specified must contain an odd number of pixels.");
-	return(FM_IO_ERR); 
+        fmerrmsg(where,
+                "The area specified must contain an odd number of pixels.");
+        return(FM_IO_ERR); 
     }
 
     dx = (int) floorf((float) (*a).iw/2.);
     dy = (int) floorf((float) (*a).ih/2.);
     /*
-    printf("dy: %4d dx: %4d\n", dy, dx);
-    */
+       printf("dy: %4d dx: %4d\n", dy, dx);
+       */
 
     k = 0;
     for (i=(xyp.row-dy); i<=(xyp.row+dy); i++) {
-	for (j=(xyp.col-dx); j<=(xyp.col+dx); j++) {
-	    l = (int) fmivec(j,i,header.iw);
-	    if (l >= maxsize) {
-		fmerrmsg(where,
-		"Image size (%d) exceeded when subsetting image (%d)",
-		maxsize, l);
-		return(FM_IO_ERR);
-	    }
-	    /*
-	    printf("%4d %4d %3d %3d %.2f\n", k, l, i, j, data[l]);
-	    */
-	    if ((int) (floorf (data[l]*100.)) != OUTOFIMAGE &&
-		(int) (floorf (data[l]*100.)) != MISVAL) {
-		nodata = 0;
-	    }
-	    (*a).data[k] = data[l];
-	    k++;
-	}
+        for (j=(xyp.col-dx); j<=(xyp.col+dx); j++) {
+            l = (int) fmivec(j,i,header.iw);
+            if (l >= maxsize) {
+                fmerrmsg(where,
+                        "Image size (%d) exceeded when subsetting image (%d)",
+                        maxsize, l);
+                return(FM_IO_ERR);
+            }
+            /*
+               printf("%4d %4d %3d %3d %.2f\n", k, l, i, j, data[l]);
+               */
+            if ((int) (floorf (data[l]*100.)) != OUTOFIMAGE &&
+                    (int) (floorf (data[l]*100.)) != MISVAL) {
+                nodata = 0;
+            }
+            (*a).data[k] = data[l];
+            k++;
+        }
     }
 
     if (nodata) {
-	fmerrmsg(where,"No data were found.");
-	return(FM_IO_ERR);
+        fmerrmsg(where,"No data were found.");
+        return(FM_IO_ERR);
     }
 
     return(FM_OK);
