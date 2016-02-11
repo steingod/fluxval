@@ -100,7 +100,7 @@ def main(argv):
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g ns -i ../par/stlist_ns_compact.txt -c "
                " -r "+archive+
-               " -m "+observations+"/ipyformatted4 -o "
+               " -m "+observations+"/ipystations-formatted4 -o "
                +outpath+"/ssival_ns_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
@@ -109,7 +109,7 @@ def main(argv):
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g nr -i ../par/stlist_nr_compact.txt -c "
                " -r "+archive+
-               " -m "+observations+"/ipyformatted4 -o "
+               " -m "+observations+"/ipystations-formatted4 -o "
                +outpath+"/ssival_nr_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
