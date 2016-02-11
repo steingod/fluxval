@@ -2,42 +2,62 @@
 
 # Some comment, check how later...
 # Will only use osisaf_archive data, not starc and similar solutions...
+# Prepared for usage in PPI
 # Assumes ...
 
-import sys, getopt
+import sys
+import getopt
 import dateutil.parser
+import os
+from subprocess import Popen
 
 def usage():
-    print sys.argv[0]+' -p <product> -a <aggregation> -s <start> -e <end> -o <outputfile>'
+    print sys.argv[0]+' -p <product> -t <aggregation> -s <start> -e <end> -a <archive> -r <observations> -o <outpath>'
     sys.exit(2)
 
 #print 'Number of arguments:', len(sys.argv), 'arguments.'
 #print 'Argument List:', str(sys.argv)
 
 def main(argv):
-   outputfile = None 
+   # Define executable to use
+   fluxval = "../bin/fluxval"
+
+   # Parse command line options
+   # Potentially move to separate function...
+   outpath = None 
    mystart = None
    myend = None
    product = None
    aggregation = None
-   # Parse command line options
+   archive = None
+   observations = None
    try:
-       opts, args = getopt.getopt(argv,"hp:a:s:e:o:",["product=","aggregation=","ofile=", "mystart=","myend="])
+       opts, args = getopt.getopt(argv,"hp:t:s:e:o:a:r:",
+               ["product=","aggregation=","ofile=",
+                   "mystart=","myend=","archive=","observations="])
    except getopt.GetoptError:
       usage()
    for opt, arg in opts:
       if opt == '-h':
          usage()
       elif opt in ("-o", "--ofile"):
-         outputfile = arg
+         outpath = arg
       elif opt in ("-p", "--product"):
          product = arg
-      elif opt in ("-a", "--aggregation"):
+      elif opt in ("-t", "--aggregation"):
          aggregation = arg
+      elif opt in ("-r", "--observations"):
+         observations = arg
+      elif opt in ("-a", "--archive"):
+         archive = arg
       elif opt in ("-s", "--startTime"):
          mystart = arg
       elif opt in ("-e", "--endTime"):
          myend = arg
+
+   if (outpath is None or archive is None or product is None or
+           aggregation is None or observations is None):
+       usage()
 
    if product in ['ssi','dli']: 
        print 'Product is ', product
@@ -47,9 +67,13 @@ def main(argv):
    if aggregation in ['daily','passage']: 
        print 'Aggregation is', aggregation
    else: 
-       print "Invalid product request"
+       print "Invalid product type request"
        sys.exit()
-   print 'Output file is "', outputfile
+   if os.path.isdir(archive):
+       print 'Output file is "', archive
+   else:
+       print "Archive not found"
+       sys.exit()
    print 'Start time is', mystart
    print 'End time is', myend
 
@@ -68,5 +92,64 @@ def main(argv):
    print startTime
    print endTime
 
+   # Prepare commands for parallel execution
+   if aggregation == "passage":
+       mycmds = [
+               (fluxval+" -f -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g ns -i ../par/stlist_ns_compact.txt -c "
+               " -r "+archive+
+               " -m "+observations+"/ipyformatted4 -o "
+               +outpath+"/ssival_ns_compact_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -f -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g nr -i ../par/stlist_nr_compact.txt -c "
+               " -r "+archive+
+               " -m "+observations+"/ipyformatted4 -o "
+               +outpath+"/ssival_nr_compact_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -f -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g ns -i ../par/stlist_ns.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/bioforsk_kdvh -o "
+               +outpath+"/ssival_ns_bioforsk_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -f -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g nr -i ../par/stlist_nr.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/bioforsk_kdvh -o "
+               +outpath+"/ssival_nr_bioforsk_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               ]
+   else:
+       mycmds = [
+               fluxval+" -p "+product+" -t "+aggregation+" -d",
+               fluxval+" -p "+product+" -t "+aggregation+" -d",
+               ]
+   print "\nCommands to run..."
+   for cmd in mycmds:
+       print cmd
+
+   processes = [Popen(cmd, shell=True)
+        for cmd in mycmds]
+   # collect statuses
+   exitcodes = [p.wait() for p in processes]
+   
+   for exitcode in exitcodes:
+       print "Command returned "+str(exitcode) 
+
+########################################################### 
+# Actually run the main...
 if __name__ == "__main__":
    main(sys.argv[1:])
