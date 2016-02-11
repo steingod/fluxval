@@ -1,0 +1,72 @@
+#!/usr/bin/python
+
+# Some comment, check how later...
+# Will only use osisaf_archive data, not starc and similar solutions...
+# Assumes ...
+
+import sys, getopt
+import dateutil.parser
+
+def usage():
+    print sys.argv[0]+' -p <product> -a <aggregation> -s <start> -e <end> -o <outputfile>'
+    sys.exit(2)
+
+#print 'Number of arguments:', len(sys.argv), 'arguments.'
+#print 'Argument List:', str(sys.argv)
+
+def main(argv):
+   outputfile = None 
+   mystart = None
+   myend = None
+   product = None
+   aggregation = None
+   # Parse command line options
+   try:
+       opts, args = getopt.getopt(argv,"hp:a:s:e:o:",["product=","aggregation=","ofile=", "mystart=","myend="])
+   except getopt.GetoptError:
+      usage()
+   for opt, arg in opts:
+      if opt == '-h':
+         usage()
+      elif opt in ("-o", "--ofile"):
+         outputfile = arg
+      elif opt in ("-p", "--product"):
+         product = arg
+      elif opt in ("-a", "--aggregation"):
+         aggregation = arg
+      elif opt in ("-s", "--startTime"):
+         mystart = arg
+      elif opt in ("-e", "--endTime"):
+         myend = arg
+
+   if product in ['ssi','dli']: 
+       print 'Product is ', product
+   else: 
+       print "Invalid product request"
+       sys.exit()
+   if aggregation in ['daily','passage']: 
+       print 'Aggregation is', aggregation
+   else: 
+       print "Invalid product request"
+       sys.exit()
+   print 'Output file is "', outputfile
+   print 'Start time is', mystart
+   print 'End time is', myend
+
+   # Convert datetime objects
+   try:
+       startTime = dateutil.parser.parse(mystart)
+   except ValueError:
+       print "Cannot parse startTime"
+       sys.exit()
+   try:
+       endTime = dateutil.parser.parse(myend)
+   except ValueError:
+       print "Cannot parse endTime"
+       sys.exit()
+
+   print startTime
+   print endTime
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
