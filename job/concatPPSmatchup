@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+# Concatenate ASCII files containing PPS and SYNOP matchup.
+# Create one file per satellite for the whole period.
+# NOT FINSIHED... MAY NOT BE NEEDED ANYMORE...
+
+
+import getopt
+import sys
+import os
+
+def usage():
+    print sys.argv[0]+' -i <inputpath> -o <outputpath> -s <satellite>'
+    sys.exit(2)
+
+def main(argv):
+    
+    print "Concatenate text files..."
+    
+    # Decode command line options...
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:s:",
+                ["inpath=","outpath=","satellite="])
+    except getopt.GetoptError:
+        usage()
+
+    inpath = outpath = satellite= None
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+        elif opt in ("-i", "--ipath"):
+            inpath = arg
+        elif opt in ("-o", "--opath"):
+            outpath = arg
+        elif opt in ("-s", "--satellite"):
+            satellite = arg
+    if (inpath is None or outpath is None or satellite is None):
+         usage()
+
+    # Create output file name
+    outfile = outpath+'/ppsmatchup_'+satellite+'.txt'
+    print outfile
+
+    # Read input directory
+    tmplist = os.listdir(inpath)
+    matchlist = [s for s in tmplist if satellite in s]
+
+    for file in matchlist:
+        print file
+
+########################################################### 
+# Actually run the main...
+if __name__ == "__main__":
+   main(sys.argv[1:])
