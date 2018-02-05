@@ -9,6 +9,8 @@ validation data. Itb will validate both daily and hourly products.
 Typical setup for validation of daily products...
 ./fluxval -d -c -p ssi -s 2017010100 -e 2017063023 -i ../par/stlist_daily.txt -o /lustre/storeB/users/steingod/osisaf_validation/valrep/2017p1/ssi-opval-daily-compact-2017p1.txt -m /lustre/storeB/users/steingod/radflux/ipystations-formatted4/ -r /lustre/storeB/immutable/archive/projects/metproduction/DNMI_SAFOSI/ -k
 
+CURRENTLY NOT PREPARED FOR DAILY!!
+
 
 AUTHOR:
 Øystein Godøy, METNO/FOU, 2018-02-05 
@@ -112,7 +114,7 @@ def main(argv):
    # Prepare commands for parallel execution
    if aggregation == "passage":
        mycmds = [
-               (fluxval+" -f -p "+product+
+               (fluxval+" -k -p "+product+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g ns -i ../par/stlist_ns_compact.txt -c "
@@ -121,7 +123,7 @@ def main(argv):
                +outpath+"/ssival_ns_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -f -p "+product+
+               (fluxval+" -k -p "+product+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g nr -i ../par/stlist_nr_compact.txt -c "
@@ -130,7 +132,7 @@ def main(argv):
                +outpath+"/ssival_nr_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -f -p "+product+
+               (fluxval+" -k -p "+product+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g ns -i ../par/stlist_ns.txt -b "
@@ -139,7 +141,7 @@ def main(argv):
                +outpath+"/ssival_ns_bioforsk_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -f -p "+product+
+               (fluxval+" -k -p "+product+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -g nr -i ../par/stlist_nr.txt -b "
@@ -151,8 +153,33 @@ def main(argv):
                ]
    else:
        mycmds = [
-               fluxval+" -p "+product+" -t "+aggregation+" -d",
-               fluxval+" -p "+product+" -t "+aggregation+" -d",
+               (fluxval+" -p "+product+" -t "+aggregation+" -l -b"+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -i ../par/stlist_daily.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/bioforsk_kdvh -o "
+               +outpath+"/ssival_daily_bioforsk_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -p "+product+" -t "+aggregation+" -l -c"+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -i ../par/stlist_daily_compact.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/ipystations-formatted4 -o "
+               +outpath+"/ssival_daily_compact_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -p "+product+" -t "+aggregation+" -l -w"+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -i ../par/stlist_daily_gts.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/gts -o "
+               +outpath+"/ssival_daily_gts"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
                ]
    print "\nCommands to run..."
    for cmd in mycmds:
