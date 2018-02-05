@@ -1,9 +1,20 @@
 #!/usr/bin/python
+# # -*- coding: utf-8 -*-
+"""Foobar.py: Description of what foobar does.
 
-# Some comment, check how later...
-# Will only use osisaf_archive data, not starc and similar solutions...
-# Prepared for usage in PPI
-# Assumes ...
+PURPOSE:
+This code will validate the OSISAF product against various types of
+validation data. Itb will validate both daily and hourly products.
+
+Typical setup for validation of daily products...
+./fluxval -d -c -p ssi -s 2017010100 -e 2017063023 -i ../par/stlist_daily.txt -o /lustre/storeB/users/steingod/osisaf_validation/valrep/2017p1/ssi-opval-daily-compact-2017p1.txt -m /lustre/storeB/users/steingod/radflux/ipystations-formatted4/ -r /lustre/storeB/immutable/archive/projects/metproduction/DNMI_SAFOSI/ -k
+
+
+AUTHOR:
+Øystein Godøy, METNO/FOU, 2018-02-05 
+
+"""
+
 
 import sys
 import getopt
@@ -55,6 +66,7 @@ def main(argv):
       elif opt in ("-e", "--endTime"):
          myend = arg
 
+   # Consistency checks
    if (outpath is None or archive is None or product is None or
            aggregation is None or observations is None):
        usage()
@@ -76,6 +88,11 @@ def main(argv):
        sys.exit()
    print 'Start time is', mystart
    print 'End time is', myend
+
+   # Check that output exist or create
+   if not os.path.exists(outpath):
+       print "Creating "+outpath
+       os.makedirs(outpath)
 
    # Convert datetime objects
    try:
