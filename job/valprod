@@ -3,17 +3,21 @@
 """
 
 PURPOSE:
-This code will validate the OSISAF product against various types of
-validation data. Itb will validate both daily and hourly products.
+    This code will validate the OSISAF product against various types of
+    validation data. Itb will validate both daily and hourly products.
 
-Typical setup for validation of daily products...
-./fluxval -d -c -p ssi -s 2017010100 -e 2017063023 -i ../par/stlist_daily.txt -o /lustre/storeB/users/steingod/osisaf_validation/valrep/2017p1/ssi-opval-daily-compact-2017p1.txt -m /lustre/storeB/users/steingod/radflux/ipystations-formatted4/ -r /lustre/storeB/immutable/archive/projects/metproduction/DNMI_SAFOSI/ -k
-
-CURRENTLY NOT PREPARED FOR DAILY!!
+    Typical setup for validation of daily products...
+        ./fluxval -d -c -p ssi -s 2017010100 -e 2017063023 
+            -i ../par/stlist_daily.txt 
+            -o /lustre/storeB/users/steingod/osisaf_validation/valrep/2017p1/ssi-opval-daily-compact-2017p1.txt -m /lustre/storeB/users/steingod/radflux/ipystations-formatted4/ -r /lustre/storeB/immutable/archive/projects/metproduction/DNMI_SAFOSI/ -k
 
 
 AUTHOR:
-Øystein Godøy, METNO/FOU, 2018-02-05 
+    Øystein Godøy, METNO/FOU, 2018-02-05 
+
+UPDATED:
+    Øystein Godøy, METNO/FOU, 2018-08-18 
+        Modified for ordinary use for daily products.
 
 """
 
@@ -153,7 +157,7 @@ def main(argv):
                ]
    else:
        mycmds = [
-               (fluxval+" -k -p "+product+" -l -b"+
+               (fluxval+" -k -p "+product+" -l"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -i ../par/stlist_daily.txt -b "
@@ -162,19 +166,19 @@ def main(argv):
                +outpath+"/ssival_daily_bioforsk_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -k -p "+product+" -l -c"+
+               (fluxval+" -k -p "+product+" -l"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
-               " -i ../par/stlist_daily_compact.txt -b "
+               " -i ../par/stlist_daily_compact.txt -c "
                " -r "+archive+
                " -m "+observations+"/ipystations-formatted4 -o "
                +outpath+"/ssival_daily_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -k -p "+product+" -l -w"+
+               (fluxval+" -k -p "+product+" -l"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
-               " -i ../par/stlist_daily_gts.txt -b "
+               " -i ../par/stlist_daily_gts.txt -w "
                " -r "+archive+
                " -m "+observations+"/gts -o "
                +outpath+"/ssival_daily_gts_"
@@ -184,6 +188,7 @@ def main(argv):
    print "\nCommands to run..."
    for cmd in mycmds:
        print cmd
+   #sys.exit()
 
    processes = [Popen(cmd, shell=True)
         for cmd in mycmds]
