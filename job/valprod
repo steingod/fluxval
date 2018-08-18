@@ -153,7 +153,7 @@ def main(argv):
                ]
    else:
        mycmds = [
-               (fluxval+" -p "+product+" -d -l -b"+
+               (fluxval+" -k -p "+product+" -l -b"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -i ../par/stlist_daily.txt -b "
@@ -162,7 +162,7 @@ def main(argv):
                +outpath+"/ssival_daily_bioforsk_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -p "+product+" -d -l -c"+
+               (fluxval+" -k -p "+product+" -l -c"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -i ../par/stlist_daily_compact.txt -b "
@@ -171,13 +171,13 @@ def main(argv):
                +outpath+"/ssival_daily_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
-               (fluxval+" -p "+product+" -d -l -w"+
+               (fluxval+" -k -p "+product+" -l -w"+
                " -s "+startTime.strftime("%Y%m%d%H")+
                " -e "+endTime.strftime("%Y%m%d%H")+
                " -i ../par/stlist_daily_gts.txt -b "
                " -r "+archive+
                " -m "+observations+"/gts -o "
-               +outpath+"/ssival_daily_gts"
+               +outpath+"/ssival_daily_gts_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                ]
