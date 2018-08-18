@@ -163,7 +163,7 @@ def main(argv):
                " -i ../par/stlist_daily.txt -b "
                " -r "+archive+
                " -m "+observations+"/bioforsk_kdvh -o "
-               +outpath+"/ssival_daily_bioforsk_"
+               +outpath+"/"+product+"val_daily_bioforsk_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                (fluxval+" -k -p "+product+" -l"+
@@ -172,7 +172,7 @@ def main(argv):
                " -i ../par/stlist_daily_compact.txt -c "
                " -r "+archive+
                " -m "+observations+"/ipystations-formatted4 -o "
-               +outpath+"/ssival_daily_compact_"
+               +outpath+"/"+product+"val_daily_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                (fluxval+" -k -p "+product+" -l"+
@@ -181,7 +181,7 @@ def main(argv):
                " -i ../par/stlist_daily_gts.txt -w "
                " -r "+archive+
                " -m "+observations+"/gts -o "
-               +outpath+"/ssival_daily_gts_"
+               +outpath+"/"+product+"val_daily_gts_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                ]
