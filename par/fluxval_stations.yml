@@ -42,46 +42,84 @@ data:
      latitude: 65.83
      longitude: 12.43
      parameters: ["ssi"]
-   station: 
-     id: 90400
-     name: Holt
-     latitude: 69.67
-     longitude: 18.83
-     parameters: ["ssi"]
-   station: 
-     id: 11500
-     name: Apelsvoll
-     latitude: 60.70
-     longitude: 10.87
-     parameters: ["ssi"]
-   station: 
-     id: 23500
-     name: Løken
-     latitude: 61.12
-     longitude: 9.07
-     parameters: ["ssi"]
-   station: 
-     id: 38140
-     name: Landvik
-     latitude: 58.33
-     longitude: 8.52
-     parameters: ["ssi"]
-   station: 
-     id: 44300
-     name: Særheim
-     latitude: 58.78
-     longitude: 5.68
-     parameters: ["ssi"]
-   station:
-     id: 56420
-     name: Fureneset
-     latitude: 61.30
-     longitude: 5.05
-     parameters: ["ssi"]
-   station:
-     id:69150
-     name: Kvithamar
-     latitude: 63.50
-     longitude: 10.87 
-     parameters: ["ssi"]
+  station: 
+    id: 90400
+    name: Holt
+    latitude: 69.67
+    longitude: 18.83
+    parameters: ["ssi"]
+  station: 
+    id: 11500
+    name: Apelsvoll
+    latitude: 60.70
+    longitude: 10.87
+    parameters: ["ssi"]
+  station: 
+    id: 23500
+    name: Løken
+    latitude: 61.12
+    longitude: 9.07
+    parameters: ["ssi"]
+  station: 
+    id: 38140
+    name: Landvik
+    latitude: 58.33
+    longitude: 8.52
+    parameters: ["ssi"]
+  station: 
+    id: 44300
+    name: Særheim
+    latitude: 58.78
+    longitude: 5.68
+    parameters: ["ssi"]
+  station:
+    id: 56420
+    name: Fureneset
+    latitude: 61.30
+    longitude: 5.05
+    parameters: ["ssi"]
+  station:
+    id: 69150
+    name: Kvithamar
+    latitude: 63.50
+    longitude: 10.87 
+    parameters: ["ssi"]
+  station:
+      id: 02045
+      name: Kiruna
+      latitude: 67.8472
+      longitude: 20.4175
+      parameters: ["ssi","dli"]
+  station:
+      id: 02701
+      name: Norrköping
+      latitude: 58.5800
+      longitude: 16.1500
+      parameters: ["ssi","dli"]
+        station:
+            id: 02091
+            name: Visby
+            latitude: 57.6772
+            longitude: 18.3525
+            parameters: ["ssi"]
+        station:
+            id: 02492
+            name: Svenska Högarna
+            latitude: 59.4481
+            longitude: 19.5147
+            parameters: ["ssi"]
+        station:
+            id: 10147
+            name: Hamburg-Fühlsbüttel
+            latitude: 53.6332
+            longitude: 9.9881
+            parameters: ["ssi"]
+        station:
+            id: 10035
+            name: Schleswig
+            latitude: 54.5275
+            longitude: 9.5486
+
+
+
 
