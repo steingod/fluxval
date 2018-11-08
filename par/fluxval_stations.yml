@@ -1,0 +1,87 @@
+# Configuration file for validation extractor.
+# Specifies stations where satellite based products should be extracted.
+
+header:
+    number_of_stations: 13
+    geographical_coordinates: ["degrees_east","degrees_north"]
+
+data:
+  station: 
+     id: 99950
+     name: Jan Mayen
+     latitude: 70.93
+     longitude: -8.67
+     parameters: ["ssi","dli"]
+  station: 
+     id: 99710
+     name: Bjørnøya
+     latitude: 74.52
+     longitude: 19.02
+     parameters: ["ssi","dli"]
+  station:
+     id: 99720
+     name: Hopen
+     latitude: 76.50
+     longitude: 25.07
+     parameters: ["ssi","dli"]
+  station:
+     id: 7501
+     name: Sodankyla
+     latitude: 67.37
+     longitude: 26.63
+     parameters: ["ssi","dli"]
+  station:
+     id: 1201
+     name: Jokioinen
+     latitude: 60.814
+     longitude: 23.501
+     parameters: ["ssi","dli"]
+  station: 
+     id: 76530
+     name: Tjøtta
+     latitude: 65.83
+     longitude: 12.43
+     parameters: ["ssi"]
+   station: 
+     id: 90400
+     name: Holt
+     latitude: 69.67
+     longitude: 18.83
+     parameters: ["ssi"]
+   station: 
+     id: 11500
+     name: Apelsvoll
+     latitude: 60.70
+     longitude: 10.87
+     parameters: ["ssi"]
+   station: 
+     id: 23500
+     name: Løken
+     latitude: 61.12
+     longitude: 9.07
+     parameters: ["ssi"]
+   station: 
+     id: 38140
+     name: Landvik
+     latitude: 58.33
+     longitude: 8.52
+     parameters: ["ssi"]
+   station: 
+     id: 44300
+     name: Særheim
+     latitude: 58.78
+     longitude: 5.68
+     parameters: ["ssi"]
+   station:
+     id: 56420
+     name: Fureneset
+     latitude: 61.30
+     longitude: 5.05
+     parameters: ["ssi"]
+   station:
+     id:69150
+     name: Kvithamar
+     latitude: 63.50
+     longitude: 10.87 
+     parameters: ["ssi"]
+
