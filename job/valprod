@@ -16,6 +16,8 @@ AUTHOR:
     Øystein Godøy, METNO/FOU, 2018-02-05 
 
 UPDATED:
+    Øystein Godøy, METNO/FOU, 2019-01-27
+        Bug fix for passage.
     Øystein Godøy, METNO/FOU, 2018-08-18 
         Modified for ordinary use for daily products.
 
@@ -124,7 +126,7 @@ def main(argv):
                " -g ns -i ../par/stlist_ns_compact.txt -c "
                " -r "+archive+
                " -m "+observations+"/ipystations-formatted4 -o "
-               +outpath+"/ssival_ns_compact_"
+               +outpath+"/"+product+"val_ns_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                (fluxval+" -k -p "+product+
@@ -133,7 +135,7 @@ def main(argv):
                " -g nr -i ../par/stlist_nr_compact.txt -c "
                " -r "+archive+
                " -m "+observations+"/ipystations-formatted4 -o "
-               +outpath+"/ssival_nr_compact_"
+               +outpath+"/"+product+"val_nr_compact_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                (fluxval+" -k -p "+product+
@@ -142,7 +144,7 @@ def main(argv):
                " -g ns -i ../par/stlist_ns.txt -b "
                " -r "+archive+
                " -m "+observations+"/bioforsk_kdvh -o "
-               +outpath+"/ssival_ns_bioforsk_"
+               +outpath+"/"+product+"val_ns_bioforsk_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                (fluxval+" -k -p "+product+
@@ -151,7 +153,25 @@ def main(argv):
                " -g nr -i ../par/stlist_nr.txt -b "
                " -r "+archive+
                " -m "+observations+"/bioforsk_kdvh -o "
-               +outpath+"/ssival_nr_bioforsk_"
+               +outpath+"/"+product+"val_nr_bioforsk_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -k -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g ns -i ../par/stlist_ns_gts.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/gts -o "
+               +outpath+"/"+product+"val_ns_gts_"
+               +startTime.strftime("%Y%m%d%H%M")+"_"
+               +endTime.strftime("%Y%m%d%H%M")+".txt"),
+               (fluxval+" -k -p "+product+
+               " -s "+startTime.strftime("%Y%m%d%H")+
+               " -e "+endTime.strftime("%Y%m%d%H")+
+               " -g nr -i ../par/stlist_nr_gts.txt -b "
+               " -r "+archive+
+               " -m "+observations+"/gts -o "
+               +outpath+"/"+product+"val_nr_gts_"
                +startTime.strftime("%Y%m%d%H%M")+"_"
                +endTime.strftime("%Y%m%d%H%M")+".txt"),
                ]
